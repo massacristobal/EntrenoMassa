@@ -195,6 +195,7 @@
   <button class="tab" onclick="showTab('sab',this)">🔥 SÁB</button>
   <button class="tab" onclick="showTab('dom',this)">🌿 DOM</button>
   <button class="tab" onclick="showTab('pesos',this)">📊 PESOS</button>
+  <button class="tab" onclick="showTab('cal',this)">📅 CALENDARIO</button>
 </div>
 <div class="content">
 
@@ -274,7 +275,66 @@
 </div>
 </div>
 
-<!-- TIMER OVERLAY -->
+<!-- CALENDARIO -->
+<div class="panel" id="panel-cal">
+  <div class="day-header"><span class="day-badge" style="background:var(--accent3)">CALENDARIO</span><span style="font-size:.85rem;color:var(--muted)">Mis entrenamientos</span></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <button class="adj-btn" onclick="calPrevMonth()" style="width:36px;height:36px;font-size:1.2rem;">‹</button>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;color:var(--text)" id="calTitle"></div>
+    <button class="adj-btn" onclick="calNextMonth()" style="width:36px;height:36px;font-size:1.2rem;">›</button>
+  </div>
+  <!-- Day labels -->
+  <div class="cal-grid" id="calDayLabels"></div>
+  <!-- Day cells -->
+  <div class="cal-grid" id="calDays"></div>
+  <!-- Legend -->
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;">
+    <div style="display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--muted)"><span style="width:14px;height:14px;border-radius:4px;background:var(--green);display:inline-block;"></span>Fútbol ⚽</div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--muted)"><span style="width:14px;height:14px;border-radius:4px;background:var(--accent2);display:inline-block;"></span>Tren sup. 💪</div>
+    <div style="display:flex;align-items:center;gap=6px;font-size:.75rem;color:var(--muted)"><span style="width:14px;height:14px;border-radius:4px;background:var(--accent3);display:inline-block;margin-right:6px;"></span>Tren inf. 🦵</div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--muted)"><span style="width:14px;height:14px;border-radius:4px;background:var(--accent);display:inline-block;"></span>Full body 🔥</div>
+  </div>
+  <!-- Stats -->
+  <div class="section-label" style="margin-top:20px">Resumen del mes</div>
+  <div id="calStats" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+  <!-- Streak -->
+  <div id="calStreak" style="margin-top:12px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;"></div>
+</div>
+
+<!-- CSS for calendar (injected inline) -->
+<style>
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;}
+  .cal-day-label{text-align:center;font-size:.65rem;color:var(--muted);font-weight:700;letter-spacing:1px;padding:4px 0;text-transform:uppercase;}
+  .cal-cell{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border:1px solid var(--border);background:var(--surface);position:relative;transition:all .15s;user-select:none;}
+  .cal-cell:hover{border-color:var(--accent);}
+  .cal-cell.today{border-color:var(--accent);border-width:2px;}
+  .cal-cell.empty{background:transparent;border-color:transparent;cursor:default;}
+  .cal-cell.other-month{opacity:.3;}
+  .cal-num{font-size:.78rem;font-weight:600;color:var(--text);line-height:1;}
+  .cal-dot{width:6px;height:6px;border-radius:50%;margin-top:2px;}
+  .cal-cell.worked{color:#000;}
+  .cal-cell.futbol{background:var(--green)!important;border-color:var(--green)!important;}
+  .cal-cell.futbol .cal-num{color:#000;}
+  .cal-cell.superior{background:var(--accent2)!important;border-color:var(--accent2)!important;}
+  .cal-cell.superior .cal-num{color:#000;}
+  .cal-cell.inferior{background:var(--accent3)!important;border-color:var(--accent3)!important;}
+  .cal-cell.inferior .cal-num{color:#fff;}
+  .cal-cell.fullbody{background:var(--accent)!important;border-color:var(--accent)!important;}
+  .cal-cell.fullbody .cal-num{color:#000;}
+  .cal-cell.descanso{background:var(--border)!important;}
+  .cal-cell.descanso .cal-num{color:var(--muted);}
+  .cal-type-picker{display:none;position:fixed;z-index:200;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 8px 32px rgba(0,0,0,.5);}
+  .cal-type-picker.show{display:block;}
+  .cal-pick-btn{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 14px;font-size:.82rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:6px;transition:all .15s;}
+  .cal-pick-btn:last-child{margin-bottom:0;}
+  .cal-pick-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .cal-pick-btn.clear{color:var(--muted);}
+  .stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;text-align:center;flex:1;min-width:70px;}
+  .stat-box .sv{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--accent);line-height:1;}
+  .stat-box .sl{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+</style>
+
+<!-- Timer overlay -->
 <div id="timerOverlay">
   <div class="timer-ex-name" id="timerExName"></div>
   <div class="timer-type-badge work" id="timerTypeBadge">SERIE</div>
@@ -900,7 +960,7 @@ const DAYS = {
     {id:'mar2',num:2,name:'Remo con mancuerna (por lado)',series:4,reps:'10',restSec:90,tempo:'Controlado',diagKey:'row',yt:'https://www.youtube.com/watch?v=PQ1X977ag5E',cues:['Rodilla y mano del mismo lado apoyadas','Codo cerca del cuerpo al subir','No rotar el torso']},
     {id:'mar3',num:3,name:'Press hombro con mancuernas',series:3,reps:'10',restSec:90,tempo:'Explosivo ↑',diagKey:'shoulder_press',yt:'https://www.youtube.com/watch?v=bmy7tIopNt4',cues:['Core activado','No arquear la espalda baja','Baja lento, sube explosivo']},
     {id:'mar4',num:4,name:'Curl de bíceps con banda',series:3,reps:'12',restSec:60,tempo:'Lento ↓',diagKey:'bicep_curl',yt:'https://www.youtube.com/watch?v=RyWX9e7imhc',cues:['Codos fijos a los lados','Contrae el bíceps arriba','Baja en 3 segundos']},
-    {id:'mar5',num:5,name:'Extensión de tríceps con banda',series:3,reps:'12',restSec:60,tempo:'Lento ↓',diagKey:'tricep_ext',yt:'https://www.youtube.com/watch?v=vC5vWtpkh64',cues:['Codos fijos, solo antebrazos','Contrae el tríceps abajo','Sube lento y controlado']},
+    {id:'mar5',num:5,name:'Extensión de tríceps con banda',series:3,reps:'12',restSec:60,tempo:'Lento ↓',diagKey:'tricep_ext',yt:'https://www.youtube.com/watch?v=Qenwe2_7IHE',cues:['Codos fijos, solo antebrazos','Contrae el tríceps abajo','Sube lento y controlado']},
     {id:'mar6',num:6,name:'Plancha',series:3,reps:'40 seg',restSec:60,tempo:'—',diagKey:'plank',yt:'https://www.youtube.com/watch?v=ASdvN_XEl_c',cues:['Glúteos y abdomen contraídos','No dejar caer las caderas','Respiración constante']},
   ],
   jue:[
@@ -1048,6 +1108,7 @@ function renderExercises(dayKey, containerId) {
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;">
             <div class="series-selector">
               <label>Series:</label>
+              <button class="ser-btn ${defSeries===2?'active':''}" onclick="setSeriesCount('${ex.id}',2,${defSeries})">2</button>
               <button class="ser-btn ${defSeries===3?'active':''}" onclick="setSeriesCount('${ex.id}',3,${defSeries})">3</button>
               <button class="ser-btn ${defSeries===4?'active':''}" onclick="setSeriesCount('${ex.id}',4,${defSeries})">4</button>
             </div>
@@ -1204,7 +1265,8 @@ function showTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
   el.classList.add('active');
-  if(id==='pesos')renderPesos();
+  if(id==='pesos') renderPesos();
+  if(id==='cal') renderCalendar();
 }
 
 // ═══════════════════════════════════════════
@@ -1666,6 +1728,133 @@ function toggleWU(id) {
   t.classList.toggle('open', !open);
 }
 
+// ═══════════════════════════════════════════
+// CALENDAR
+// ═══════════════════════════════════════════
+let calYear  = new Date().getFullYear();
+let calMonth = new Date().getMonth(); // 0-based
+let calData  = {};
+try { calData = JSON.parse(localStorage.getItem('rutina_cal') || '{}'); } catch(e){}
+
+const CAL_TYPES = [
+  { key:'futbol',   label:'⚽ Fútbol',          cls:'futbol'   },
+  { key:'superior', label:'💪 Tren superior',    cls:'superior' },
+  { key:'inferior', label:'🦵 Tren inferior',    cls:'inferior' },
+  { key:'fullbody', label:'🔥 Full body',        cls:'fullbody' },
+  { key:'descanso', label:'😴 Descanso activo',  cls:'descanso' },
+];
+const DAY_LABELS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+let pickerDate = null;
+
+function calKey(y, m, d) { return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+function renderCalendar() {
+  document.getElementById('calTitle').textContent = `${MONTH_NAMES[calMonth]} ${calYear}`;
+  // day labels
+  document.getElementById('calDayLabels').innerHTML = DAY_LABELS.map(d =>
+    `<div class="cal-day-label">${d}</div>`).join('');
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  // convert to Mon-first (0=Mon..6=Sun)
+  const startOffset = (firstDay + 6) % 7;
+  const today = new Date();
+
+  let cells = '';
+  // empty cells before first day
+  for (let i = 0; i < startOffset; i++) cells += `<div class="cal-cell empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const key = calKey(calYear, calMonth, d);
+    const type = calData[key] || '';
+    const isToday = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
+    const typeObj = CAL_TYPES.find(t => t.key === type);
+    const cls = typeObj ? typeObj.cls : '';
+    cells += `<div class="cal-cell ${cls} ${isToday?'today':''}" onclick="calCellClick(event,${d})">
+      <span class="cal-num">${d}</span>
+      ${type ? `<span style="font-size:.6rem;margin-top:1px">${typeObj?.label.split(' ')[0]||''}</span>` : ''}
+    </div>`;
+  }
+  document.getElementById('calDays').innerHTML = cells;
+  renderCalStats();
+}
+
+function calCellClick(e, day) {
+  pickerDate = { y: calYear, m: calMonth, d: day };
+  const picker = document.getElementById('calTypePicker');
+  picker.classList.add('show');
+  // position near tap
+  const rect = e.target.closest('.cal-cell').getBoundingClientRect();
+  let top = rect.bottom + window.scrollY + 4;
+  let left = rect.left + window.scrollX;
+  if (left + 200 > window.innerWidth) left = window.innerWidth - 210;
+  picker.style.top = top + 'px';
+  picker.style.left = left + 'px';
+  e.stopPropagation();
+}
+
+function calPick(type) {
+  if (!pickerDate) return;
+  const key = calKey(pickerDate.y, pickerDate.m, pickerDate.d);
+  if (type === 'clear') delete calData[key];
+  else calData[key] = type;
+  try { localStorage.setItem('rutina_cal', JSON.stringify(calData)); } catch(e){}
+  document.getElementById('calTypePicker').classList.remove('show');
+  renderCalendar();
+}
+
+function calPrevMonth() {
+  calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+function calNextMonth() {
+  calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
+
+function renderCalStats() {
+  // count types this month
+  const counts = {};
+  CAL_TYPES.forEach(t => counts[t.key] = 0);
+  Object.entries(calData).forEach(([key, type]) => {
+    if (key.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)) {
+      if (counts[type] !== undefined) counts[type]++;
+    }
+  });
+  const total = Object.values(counts).reduce((a,b) => a+b, 0);
+  document.getElementById('calStats').innerHTML = `
+    <div class="stat-box"><div class="sv">${total}</div><div class="sl">Este mes</div></div>
+    <div class="stat-box"><div class="sv" style="color:var(--green)">${counts.futbol}</div><div class="sl">⚽ Fútbol</div></div>
+    <div class="stat-box"><div class="sv" style="color:var(--accent2)">${counts.superior}</div><div class="sl">💪 Sup.</div></div>
+    <div class="stat-box"><div class="sv" style="color:var(--accent3)">${counts.inferior}</div><div class="sl">🦵 Inf.</div></div>
+    <div class="stat-box"><div class="sv" style="color:var(--accent)">${counts.fullbody}</div><div class="sl">🔥 Full</div></div>`;
+
+  // streak calculation (consecutive days with any workout, not descanso)
+  const allDates = Object.entries(calData)
+    .filter(([,v]) => v && v !== 'descanso')
+    .map(([k]) => k).sort();
+  let streak = 0, maxStreak = 0, cur = 0;
+  const todayStr = new Date().toISOString().slice(0,10);
+  // count current streak backwards from today
+  let check = new Date();
+  while (true) {
+    const k = check.toISOString().slice(0,10);
+    if (calData[k] && calData[k] !== 'descanso') { streak++; check.setDate(check.getDate()-1); }
+    else break;
+  }
+  document.getElementById('calStreak').innerHTML = streak > 0
+    ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:var(--accent);line-height:1">${streak}</div>
+       <div style="font-size:.78rem;color:var(--muted);margin-top:4px">días seguidos entrenando 🔥</div>`
+    : `<div style="font-size:.82rem;color:var(--muted)">Marca tu primer entrenamiento para empezar el racha 💪</div>`;
+}
+
+// close picker when tapping outside
+document.addEventListener('click', () => {
+  document.getElementById('calTypePicker')?.classList.remove('show');
+});
+
 // INIT
 renderWarmups('lun','wu-lun');
 renderWarmups('mar','wu-mar');
@@ -1675,6 +1864,17 @@ renderExercises('mar','exlist-mar');
 renderExercises('jue','exlist-jue');
 renderExercises('sab','exlist-sab');
 refreshQuickWeights();
+renderCalendar();
 </script>
+<!-- CALENDAR TYPE PICKER -->
+<div class="cal-type-picker" id="calTypePicker">
+  <div style="font-size:.7rem;color:var(--muted);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase">¿Qué hiciste?</div>
+  <button class="cal-pick-btn" onclick="calPick('futbol')">⚽ Fútbol</button>
+  <button class="cal-pick-btn" onclick="calPick('superior')">💪 Tren superior</button>
+  <button class="cal-pick-btn" onclick="calPick('inferior')">🦵 Tren inferior</button>
+  <button class="cal-pick-btn" onclick="calPick('fullbody')">🔥 Full body</button>
+  <button class="cal-pick-btn" onclick="calPick('descanso')">😴 Descanso activo</button>
+  <button class="cal-pick-btn clear" onclick="calPick('clear')">✕ Borrar</button>
+</div>
 </body>
 </html>
