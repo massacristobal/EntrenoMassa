@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Rutina Semanal</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0e0f13;--surface:#16181f;--card:#1e2029;--border:#2a2d3a;--accent:#e8ff47;--accent2:#47c8ff;--accent3:#ff6b47;--text:#f0f0f0;--muted:#7a7d8a;--green:#4cff91;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;padding:0 0 80px;}
+  header{background:linear-gradient(135deg,#0e0f13,#1a1c28);border-bottom:2px solid var(--accent);padding:22px 24px 16px;position:sticky;top:0;z-index:100;}
+  header h1{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:3px;color:var(--accent);line-height:1;}
+  header p{color:var(--muted);font-size:.8rem;margin-top:3px;}
+  .tabs{display:flex;gap:4px;padding:14px 24px 0;overflow-x:auto;scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px 8px 0 0;cursor:pointer;font-size:.78rem;font-weight:600;white-space:nowrap;transition:all .2s;font-family:'DM Sans',sans-serif;}
+  .tab.active{background:var(--accent);color:#000;border-color:var(--accent);}
+  .tab:hover:not(.active){color:var(--text);border-color:var(--accent);}
+  .content{padding:0 20px;border-top:2px solid var(--border);margin-top:-2px;}
+  .panel{display:none;padding-top:18px;}
+  .panel.active{display:block;}
+  .day-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .day-badge{font-family:'Bebas Neue',sans-serif;font-size:.72rem;letter-spacing:2px;padding:4px 12px;border-radius:4px;background:var(--accent);color:#000;}
+  .day-badge.blue{background:var(--accent2);}
+  .day-badge.orange{background:var(--accent3);}
+  .day-badge.green{background:var(--green);}
+  .day-badge.rest{background:var(--border);color:var(--muted);}
+  .section-label{font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:.88rem;color:var(--accent2);margin:16px 0 10px;display:flex;align-items:center;gap:8px;}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+  /* WARMUP CARDS */
+  .warmup-list{display:flex;flex-direction:column;gap:8px;margin-bottom:4px;}
+  .wu-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+  .wu-header{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;user-select:none;}
+  .wu-icon{font-size:1rem;flex-shrink:0;}
+  .wu-info{flex:1;}
+  .wu-name{font-size:.82rem;color:var(--text);font-weight:600;}
+  .wu-time{color:var(--accent2);font-size:.72rem;margin-top:1px;}
+  .wu-toggle{color:var(--muted);font-size:.8rem;transition:transform .3s;flex-shrink:0;}
+  .wu-toggle.open{transform:rotate(180deg);}
+  .wu-detail{display:none;border-top:1px solid var(--border);padding:10px 12px;}
+  .wu-detail.open{display:block;}
+  .wu-row{display:flex;gap:10px;align-items:flex-start;}
+  .wu-svg{flex-shrink:0;background:var(--card);border-radius:6px;overflow:hidden;}
+  .wu-svg svg{display:block;}
+  .wu-text{flex:1;font-size:.75rem;color:var(--muted);line-height:1.5;}
+  .wu-text b{color:var(--text);}
+  .wu-yt{display:inline-flex;align-items:center;gap:5px;background:#ff0000;color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;margin-top:8px;transition:opacity .2s;}
+  .wu-yt:hover{opacity:.85;}
+
+  /* CHECKBOX TICK */
+  .tick-box{width:22px;height:22px;border:2px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;background:var(--surface);}
+  .tick-box.done{background:var(--green);border-color:var(--green);}
+  .tick-box .check{display:none;color:#000;font-size:.85rem;font-weight:900;}
+  .tick-box.done .check{display:block;}
+  .wu-card.done-card{opacity:.55;}
+  .wu-card.done-card .wu-name{text-decoration:line-through;}
+
+  /* SERIES SELECTOR */
+  .series-selector{display:flex;align-items:center;gap:6px;margin-bottom:2px;}
+  .series-selector label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+  .ser-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:2px 10px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+  .ser-btn.active{background:var(--accent);color:#000;border-color:var(--accent);}
+
+  /* REPS ADJUSTER */
+  .reps-adjuster{display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+  .reps-adjuster label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-right:2px;}
+  .reps-val{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--accent);min-width:36px;text-align:center;line-height:1;}
+  .reps-unit{font-size:.68rem;color:var(--muted);margin-left:0px;}
+  .adj-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:1.1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;transition:all .15s;flex-shrink:0;}
+  .adj-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .adj-btn:active{background:var(--accent);color:#000;border-color:var(--accent);}
+  .series-bullets{display:flex;gap:6px;align-items:center;margin-top:6px;}
+  .s-bullet{width:30px;height:30px;border-radius:8px;border:2px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.75rem;font-weight:700;color:var(--muted);transition:all .2s;flex-shrink:0;}
+  .s-bullet.done{background:var(--green);border-color:var(--green);color:#000;}
+  .s-bullet.active-now{border-color:var(--accent);color:var(--accent);}
+  .s-bullet-label{font-size:.65rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+
+  /* EXERCISE CARDS */
+  .ex-list{display:flex;flex-direction:column;gap:10px;margin-top:8px;}
+  .ex-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  .ex-card-header{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;user-select:none;}
+  .ex-num{width:26px;height:26px;background:var(--border);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--muted);flex-shrink:0;}
+  .ex-info{flex:1;}
+  .ex-name{font-size:.88rem;font-weight:600;color:var(--text);}
+  .ex-meta{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;}
+  .tag{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:.68rem;color:var(--muted);}
+  .tag.yellow{border-color:var(--accent);color:var(--accent);}
+  .tag.blue{border-color:var(--accent2);color:var(--accent2);}
+  .ex-toggle{color:var(--muted);font-size:.9rem;transition:transform .3s;flex-shrink:0;}
+  .ex-toggle.open{transform:rotate(180deg);}
+  .ex-detail{display:none;border-top:1px solid var(--border);}
+  .ex-detail.open{display:block;}
+
+  /* DETAIL INNER — stacked layout */
+  .ex-detail-inner{padding:14px;display:flex;flex-direction:column;gap:12px;}
+
+  /* DIAGRAM — step-by-step positions */
+  .ex-diagram{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .diagram-label{font-family:'Bebas Neue',sans-serif;font-size:.75rem;letter-spacing:2px;color:var(--accent);padding:8px 12px 4px;}
+  .diagram-steps{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;padding:0 12px 12px;}
+  .diagram-steps::-webkit-scrollbar{display:none;}
+  .diagram-step{flex-shrink:0;text-align:center;width:100px;}
+  .diagram-step svg{width:90px;height:90px;}
+  .diagram-step .step-label{font-size:.65rem;color:var(--muted);margin-top:3px;}
+  .step-arrow{flex-shrink:0;display:flex;align-items:center;padding:0 4px;color:var(--border);font-size:1.2rem;padding-bottom:16px;}
+
+  /* CUES */
+  .ex-cues{font-size:.78rem;color:var(--muted);line-height:1.6;}
+  .ex-cues ul{padding-left:16px;}
+  .ex-cues li{margin-bottom:2px;}
+
+  /* BUTTONS ROW */
+  .ex-buttons{display:flex;gap:8px;flex-wrap:wrap;}
+  .yt-btn{display:flex;align-items:center;gap:6px;background:#ff0000;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;transition:opacity .2s;}
+  .yt-btn:hover{opacity:.85;}
+  .timer-btn{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--accent3);color:var(--accent3);border-radius:6px;padding:7px 14px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;font-weight:600;}
+  .timer-btn:hover{background:var(--accent3);color:#fff;}
+  .ai-btn{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--accent2);color:var(--accent2);border-radius:6px;padding:7px 14px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;font-weight:600;}
+  .ai-btn:hover{background:var(--accent2);color:#000;}
+  .ai-btn.loading{opacity:.6;pointer-events:none;}
+  .ai-response{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:.78rem;color:var(--muted);line-height:1.6;display:none;}
+  .ai-response.visible{display:block;}
+
+  /* TIMER OVERLAY */
+  #timerOverlay{display:none;position:fixed;inset:0;z-index:999;background:rgba(10,11,15,.97);flex-direction:column;align-items:center;justify-content:center;}
+  #timerOverlay.show{display:flex;}
+  .timer-ex-name{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:3px;color:var(--muted);margin-bottom:6px;text-align:center;padding:0 20px;}
+  .timer-type-badge{font-family:'Bebas Neue',sans-serif;font-size:.8rem;letter-spacing:2px;padding:4px 14px;border-radius:20px;margin-bottom:20px;}
+  .timer-type-badge.work{background:var(--accent3);color:#fff;}
+  .timer-type-badge.rest-phase{background:var(--accent2);color:#000;}
+  .timer-ring-wrap{position:relative;width:200px;height:200px;margin-bottom:16px;}
+  .timer-ring-wrap svg{position:absolute;top:0;left:0;}
+  #ringBg{stroke:var(--border);}
+  #ringFill{stroke:var(--accent);transition:stroke-dashoffset .1s linear;transform:rotate(-90deg);transform-origin:50% 50%;}
+  #ringFill.rest-color{stroke:var(--accent2);}
+  .timer-display{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  #timerDigits{font-family:'Bebas Neue',sans-serif;font-size:4rem;color:var(--text);line-height:1;letter-spacing:2px;}
+  #timerLabel{font-size:.72rem;color:var(--muted);letter-spacing:2px;margin-top:4px;}
+  .timer-info-row{display:flex;gap:24px;margin-bottom:20px;}
+  .timer-stat{text-align:center;}
+  .timer-stat .val{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--accent);}
+  .timer-stat .lbl{font-size:.65rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+  .timer-controls{display:flex;gap:10px;}
+  .tc-btn{background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:12px 20px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+  .tc-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .tc-btn.primary{background:var(--accent);color:#000;border-color:var(--accent);}
+  .tc-btn.danger{border-color:var(--accent3);color:var(--accent3);}
+  .timer-next-label{font-size:.73rem;color:var(--muted);margin-top:14px;letter-spacing:1px;}
+
+  /* REST / MISC */
+  .rest-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;}
+  .rest-card .emoji{font-size:2rem;margin-bottom:8px;}
+  .rest-card h3{color:var(--muted);font-size:1rem;}
+  .rest-card p{color:var(--muted);font-size:.82rem;margin-top:6px;}
+  .tip-box{background:linear-gradient(135deg,#1e2029,#1a1c28);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:12px 14px;font-size:.82rem;color:var(--muted);margin-top:14px;}
+  .tip-box span{color:var(--accent);font-weight:600;}
+
+  /* WEIGHT LOG */
+  .week-selector{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+  .wk-btn{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:20px;cursor:pointer;font-size:.76rem;font-weight:600;transition:all .2s;font-family:'DM Sans',sans-serif;}
+  .wk-btn.active{background:var(--accent);color:#000;border-color:var(--accent);}
+  .log-day-label{font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:.85rem;color:var(--accent2);margin:16px 0 8px;}
+  .log-table{width:100%;border-collapse:collapse;}
+  .log-table th{font-size:.68rem;letter-spacing:1px;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);text-transform:uppercase;}
+  .log-table td{padding:8px;border-bottom:1px solid var(--border);font-size:.82rem;vertical-align:middle;}
+  .log-table tr:last-child td{border-bottom:none;}
+  .weight-input{background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 8px;font-size:.82rem;width:72px;text-align:center;font-family:'DM Sans',sans-serif;transition:border-color .2s;}
+  .weight-input:focus{outline:none;border-color:var(--accent);}
+  .weight-input::placeholder{color:var(--muted);}
+  .save-btn{background:var(--accent);color:#000;border:none;border-radius:8px;padding:11px 20px;font-weight:700;font-size:.85rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:16px;width:100%;transition:opacity .2s;}
+  .save-btn:hover{opacity:.85;}
+  .save-confirm{text-align:center;font-size:.78rem;color:var(--green);margin-top:8px;display:none;}
+  .prog-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+  .prog-card h4{font-size:.76rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
+  .prog-ex{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:6px;}
+  .prog-ex:last-child{border-bottom:none;}
+  .prog-weights{display:flex;gap:5px;flex-wrap:wrap;}
+  .prog-chip{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:.7rem;color:var(--muted);}
+  .prog-chip.latest{border-color:var(--accent);color:var(--accent);font-weight:600;}
+  @media(max-width:400px){.diagram-step{width:80px;}.diagram-step svg{width:72px;height:72px;}.wu-row{flex-direction:column;}}
+</style>
+</head>
+<body>
+<header>
+  <h1>MI RUTINA SEMANAL</h1>
+  <p>Fuerza · Fútbol · Condición física</p>
+</header>
+<div class="tabs">
+  <button class="tab active" onclick="showTab('lun',this)">⚽ LUN</button>
+  <button class="tab" onclick="showTab('mar',this)">💪 MAR</button>
+  <button class="tab" onclick="showTab('mie',this)">🌿 MIÉ</button>
+  <button class="tab" onclick="showTab('jue',this)">🦵 JUE</button>
+  <button class="tab" onclick="showTab('vie',this)">🌿 VIE</button>
+  <button class="tab" onclick="showTab('sab',this)">🔥 SÁB</button>
+  <button class="tab" onclick="showTab('dom',this)">🌿 DOM</button>
+  <button class="tab" onclick="showTab('pesos',this)">📊 PESOS</button>
+</div>
+<div class="content">
+
+<!-- LUNES -->
+<div class="panel active" id="panel-lun">
+  <div class="day-header"><span class="day-badge green">LUNES</span><span style="font-size:.85rem;color:var(--muted)">Entrenamiento de Fútbol</span></div>
+  <div class="section-label">Calentamiento previo (10 min)</div>
+  <div class="warmup-list" id="wu-lun"></div>
+  <div class="tip-box"><span>Post-entrenamiento:</span> Estira 10 min · Proteína + carbohidratos en los siguientes 45 min · Hidratación.</div>
+</div>
+
+<!-- MARTES -->
+<div class="panel" id="panel-mar">
+  <div class="day-header"><span class="day-badge blue">MARTES</span><span style="font-size:.85rem;color:var(--muted)">Tren Superior</span></div>
+  <div class="section-label">Calentamiento (8 min)</div>
+  <div class="warmup-list" id="wu-mar"></div>
+  <div class="section-label">Entrenamiento</div>
+  <div style="font-size:.74rem;color:var(--muted);margin-bottom:10px;">⏱ Descanso entre series: 60–90 seg · Entre ejercicios: 2 min</div>
+  <div class="ex-list" id="exlist-mar"></div>
+</div>
+
+<!-- MIÉRCOLES -->
+<div class="panel" id="panel-mie">
+  <div class="day-header"><span class="day-badge rest">MIÉRCOLES</span><span style="font-size:.85rem;color:var(--muted)">Descanso Activo</span></div>
+  <div class="rest-card"><div class="emoji">🚶</div><h3>Recuperación activa</h3><p>Caminata 25–30 min a ritmo suave</p><p style="margin-top:8px">+ 10 min movilidad de cadera y hombros</p></div>
+  <div class="tip-box"><span>Tip:</span> Sin esfuerzo intenso. El objetivo es activar la circulación y acelerar la recuperación muscular del martes.</div>
+</div>
+
+<!-- JUEVES -->
+<div class="panel" id="panel-jue">
+  <div class="day-header"><span class="day-badge orange">JUEVES</span><span style="font-size:.85rem;color:var(--muted)">Tren Inferior + Core</span></div>
+  <div class="section-label">Calentamiento (8 min)</div>
+  <div class="warmup-list" id="wu-jue"></div>
+  <div class="section-label">Entrenamiento</div>
+  <div style="font-size:.74rem;color:var(--muted);margin-bottom:10px;">⏱ Descanso entre series: 90 seg · Entre ejercicios: 2–2.5 min</div>
+  <div class="ex-list" id="exlist-jue"></div>
+</div>
+
+<!-- VIERNES -->
+<div class="panel" id="panel-vie">
+  <div class="day-header"><span class="day-badge rest">VIERNES</span><span style="font-size:.85rem;color:var(--muted)">Descanso Total</span></div>
+  <div class="rest-card"><div class="emoji">😴</div><h3>Recuperación completa</h3><p>Sin entrenamiento. Duerme 7–8 horas.</p><p style="margin-top:8px">Opcional: estiramientos suaves 10 min antes de dormir.</p></div>
+  <div class="tip-box"><span>Recuerda:</span> El músculo crece en el descanso, no durante el entrenamiento. Este día es parte del plan.</div>
+</div>
+
+<!-- SÁBADO -->
+<div class="panel" id="panel-sab">
+  <div class="day-header"><span class="day-badge">SÁBADO</span><span style="font-size:.85rem;color:var(--muted)">Full Body + Potencia</span></div>
+  <div class="section-label">Calentamiento (7 min)</div>
+  <div class="warmup-list" id="wu-sab"></div>
+  <div class="section-label">Entrenamiento</div>
+  <div style="font-size:.74rem;color:var(--muted);margin-bottom:10px;">⏱ Descanso entre series: 60 seg · Entre ejercicios: 90 seg</div>
+  <div class="ex-list" id="exlist-sab"></div>
+</div>
+
+<!-- DOMINGO -->
+<div class="panel" id="panel-dom">
+  <div class="day-header"><span class="day-badge rest">DOMINGO</span><span style="font-size:.85rem;color:var(--muted)">Descanso Total</span></div>
+  <div class="rest-card"><div class="emoji">🏡</div><h3>Día de recuperación total</h3><p>Sin entrenamiento.</p><p style="margin-top:8px">Prepárate mentalmente para la semana que viene.</p></div>
+  <div class="tip-box"><span>Mentalidad:</span> Consistencia semana a semana es más poderosa que cualquier sesión individual. ¡Ya completaste la semana! 💪</div>
+</div>
+
+<!-- PESOS -->
+<div class="panel" id="panel-pesos">
+  <div class="day-header"><span class="day-badge blue">REGISTRO</span><span style="font-size:.85rem;color:var(--muted)">Mis Pesos por Semana</span></div>
+  <div class="tip-box" style="margin-bottom:14px;"><span>💡 Tip:</span> También puedes anotar el peso directo en cada ejercicio al expandirlo, sin venir a esta pestaña.</div>
+  <div class="week-selector" id="weekSelector"></div>
+  <div id="logContent"></div>
+  <div style="display:flex;gap:10px;margin-top:14px;">
+    <button class="save-btn" style="flex:1" onclick="saveWeights()">💾 Guardar semana</button>
+    <button id="exportBtn" class="save-btn" style="flex:1;background:var(--accent2);color:#000;" onclick="exportWeights()">📋 Exportar / Copiar</button>
+  </div>
+  <div class="save-confirm" id="saveConfirm">✅ ¡Guardado correctamente!</div>
+  <div style="font-size:.72rem;color:var(--muted);margin-top:8px;text-align:center;">Exportar copia el registro al portapapeles para pegarlo donde quieras</div>
+  <div class="section-label" style="margin-top:24px">Historial de progresión</div>
+  <div id="progressGrid"></div>
+</div>
+</div>
+
+<!-- TIMER OVERLAY -->
+<div id="timerOverlay">
+  <div class="timer-ex-name" id="timerExName"></div>
+  <div class="timer-type-badge work" id="timerTypeBadge">SERIE</div>
+  <div class="timer-ring-wrap">
+    <svg width="200" height="200" viewBox="0 0 200 200">
+      <circle id="ringBg" cx="100" cy="100" r="88" fill="none" stroke-width="10"/>
+      <circle id="ringFill" cx="100" cy="100" r="88" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="553" stroke-dashoffset="0"/>
+    </svg>
+    <div class="timer-display">
+      <div id="timerDigits">0:00</div>
+      <div id="timerLabel">EN CURSO</div>
+    </div>
+  </div>
+  <div class="timer-info-row">
+    <div class="timer-stat"><div class="val" id="tSerie">1</div><div class="lbl">Serie</div></div>
+    <div class="timer-stat"><div class="val" id="tTotal">4</div><div class="lbl">Total</div></div>
+    <div class="timer-stat"><div class="val" id="tReps">—</div><div class="lbl">Reps</div></div>
+  </div>
+  <div class="timer-controls">
+    <button class="tc-btn" onclick="timerSkip()">⏭ Saltar</button>
+    <button class="tc-btn primary" id="tcPlayPause" onclick="timerToggle()">⏸ Pausar</button>
+    <button class="tc-btn danger" onclick="timerClose()">✕ Cerrar</button>
+  </div>
+  <div class="timer-next-label" id="timerNextLabel"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// STEP-BY-STEP DIAGRAM SVG BUILDER
+// Each exercise has 2-3 position frames showing the movement clearly
+// ═══════════════════════════════════════════
+
+// Shared body parts colors
+const C = { skin:'#e8b896', shirt:'#47c8ff', pants:'#2d5a8e', weight:'#e8ff47', band:'#ff6b47', ground:'#2a2d3a', arrow:'#4cff91', muted:'#7a7d8a' };
+
+// Helper: base64 encode SVG for use in img src
+function svgToImg(svgStr) {
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
+}
+
+// ── FIGURE PRIMITIVES ──
+// Standing figure at cx,cy (feet at cy)
+function figStanding(cx, cy, armAngle=0, kneeFlexion=0, holding='none') {
+  const fy = cy; // feet y
+  const ky = fy - 28 + kneeFlexion*8; // knee y
+  const hy = fy - 56 + kneeFlexion*12; // hip y
+  const sy = hy - 22; // shoulder y
+  const ny = sy - 10; // neck y
+  const hy2 = ny - 9; // head center y
+  // arm positions
+  const lax = cx - 14 + Math.cos((armAngle+180)*Math.PI/180)*20;
+  const lay = sy + Math.sin((armAngle+180)*Math.PI/180)*20;
+  const rax = cx + 14 + Math.cos(armAngle*Math.PI/180)*20;
+  const ray = sy + Math.sin(armAngle*Math.PI/180)*20;
+  let parts = `
+    <line x1="${cx-7}" y1="${hy}" x2="${cx-5}" y2="${ky}" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+    <line x1="${cx+7}" y1="${hy}" x2="${cx+5}" y2="${ky}" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+    <line x1="${cx-5}" y1="${ky}" x2="${cx-4}" y2="${fy}" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="${cx+5}" y1="${ky}" x2="${cx+4}" y2="${fy}" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+    <rect x="${cx-10}" y="${sy}" width="20" height="${hy-sy}" rx="5" fill="${C.shirt}"/>
+    <circle cx="${cx}" cy="${hy2}" r="8" fill="${C.skin}"/>
+    <line x1="${cx-10}" y1="${sy+4}" x2="${lax}" y2="${lay}" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="${cx+10}" y1="${sy+4}" x2="${rax}" y2="${ray}" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>`;
+  if(holding==='dumbbell') {
+    parts += `<rect x="${lax-8}" y="${lay-4}" width="14" height="8" rx="3" fill="${C.weight}"/>
+    <rect x="${rax-6}" y="${ray-4}" width="14" height="8" rx="3" fill="${C.weight}"/>`;
+  }
+  return parts;
+}
+
+// Lying figure (on back) at y level
+function figLying(cy, armsUp=false, kneesBent=true) {
+  const hx=18,bx=50,lx=90;
+  let d = `<circle cx="${hx}" cy="${cy}" r="9" fill="${C.skin}"/>`;
+  d += `<rect x="${hx+6}" y="${cy-7}" width="40" height="14" rx="5" fill="${C.shirt}"/>`;
+  if(kneesBent) {
+    d += `<line x1="${bx+30}" y1="${cy}" x2="${bx+48}" y2="${cy-16}" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>`;
+    d += `<line x1="${bx+50}" y1="${cy-4}" x2="${bx+48}" y2="${cy-16}" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>`;
+    d += `<line x1="${bx+36}" y1="${cy}" x2="${bx+54}" y2="${cy-16}" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>`;
+    d += `<line x1="${bx+56}" y1="${cy-4}" x2="${bx+54}" y2="${cy-16}" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>`;
+  } else {
+    d += `<line x1="${bx+30}" y1="${cy}" x2="${bx+60}" y2="${cy}" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>`;
+  }
+  if(armsUp) {
+    d += `<line x1="${bx+4}" y1="${cy-5}" x2="${bx-4}" y2="${cy-24}" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>`;
+    d += `<line x1="${bx+16}" y1="${cy-5}" x2="${bx+24}" y2="${cy-24}" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>`;
+    d += `<rect x="${bx-12}" y="${cy-30}" width="12" height="8" rx="2" fill="${C.weight}"/>`;
+    d += `<rect x="${bx+22}" y="${cy-30}" width="12" height="8" rx="2" fill="${C.weight}"/>`;
+  } else {
+    d += `<line x1="${bx+4}" y1="${cy-4}" x2="${bx-2}" y2="${cy+4}" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>`;
+    d += `<line x1="${bx+16}" y1="${cy-4}" x2="${bx+22}" y2="${cy+4}" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>`;
+  }
+  return d;
+}
+
+const DIAGRAMS = {
+  chest_press: {
+    label:'Press de Pecho en el suelo',
+    steps:[
+      {label:'Inicio: brazos abajo',svg:`<svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="90" fill="#16181f"/><line x1="0" y1="70" x2="120" y2="70" stroke="${C.ground}" stroke-width="3"/>
+        <circle cx="16" cy="55" r="9" fill="${C.skin}"/>
+        <rect x="22" y="48" width="40" height="14" rx="5" fill="${C.shirt}"/>
+        <line x1="60" y1="55" x2="80" y2="65" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="70" y1="65" x2="80" y2="70" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <line x1="66" y1="55" x2="86" y2="65" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="76" y1="65" x2="88" y2="70" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <line x1="24" y1="50" x2="16" y2="62" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="36" y1="50" x2="44" y2="62" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <rect x="6" y="58" width="12" height="7" rx="2" fill="${C.weight}"/>
+        <rect x="42" y="58" width="12" height="7" rx="2" fill="${C.weight}"/>
+        <text x="60" y="84" text-anchor="middle" font-size="8" fill="${C.muted}" font-family="sans-serif">Codos en el suelo</text>
+      </svg>`},
+      {label:'Subida: brazos arriba',svg:`<svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="90" fill="#16181f"/><line x1="0" y1="70" x2="120" y2="70" stroke="${C.ground}" stroke-width="3"/>
+        <circle cx="16" cy="55" r="9" fill="${C.skin}"/>
+        <rect x="22" y="48" width="40" height="14" rx="5" fill="${C.shirt}"/>
+        <line x1="60" y1="55" x2="80" y2="65" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="70" y1="65" x2="80" y2="70" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <line x1="66" y1="55" x2="86" y2="65" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="76" y1="65" x2="88" y2="70" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <line x1="24" y1="50" x2="20" y2="34" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="36" y1="50" x2="40" y2="34" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <rect x="10" y="27" width="12" height="7" rx="2" fill="${C.weight}"/>
+        <rect x="38" y="27" width="12" height="7" rx="2" fill="${C.weight}"/>
+        <path d="M58 22 L62 14 L66 22" fill="none" stroke="${C.arrow}" stroke-width="2"/>
+        <text x="60" y="84" text-anchor="middle" font-size="8" fill="${C.muted}" font-family="sans-serif">Brazos extendidos</text>
+      </svg>`},
+    ]
+  },
+  row: {
+    label:'Remo con Mancuerna',
+    steps:[
+      {label:'Apoyo y bajada',svg:`<svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="90" fill="#16181f"/>
+        <rect x="0" y="60" width="40" height="8" rx="2" fill="${C.ground}"/>
+        <circle cx="90" cy="30" r="8" fill="${C.skin}"/>
+        <rect x="50" y="34" width="38" height="13" rx="5" fill="${C.shirt}" transform="rotate(-20,70,40)"/>
+        <line x1="60" y1="46" x2="52" y2="62" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="52" y1="62" x2="48" y2="70" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <line x1="70" y1="44" x2="80" y2="58" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="80" y1="58" x2="84" y2="68" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <line x1="62" y1="38" x2="30" y2="52" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="76" y1="36" x2="90" y2="52" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <rect x="84" y="48" width="14" height="8" rx="3" fill="${C.weight}"/>
+        <text x="60" y="84" text-anchor="middle" font-size="8" fill="${C.muted}" font-family="sans-serif">Brazo colgando</text>
+      </svg>`},
+      {label:'Tirón al codo',svg:`<svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="90" fill="#16181f"/>
+        <rect x="0" y="60" width="40" height="8" rx="2" fill="${C.ground}"/>
+        <circle cx="90" cy="30" r="8" fill="${C.skin}"/>
+        <rect x="50" y="34" width="38" height="13" rx="5" fill="${C.shirt}" transform="rotate(-20,70,40)"/>
+        <line x1="60" y1="46" x2="52" y2="62" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="52" y1="62" x2="48" y2="70" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <line x1="70" y1="44" x2="80" y2="58" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="80" y1="58" x2="84" y2="68" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <line x1="62" y1="38" x2="30" y2="52" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="76" y1="36" x2="82" y2="30" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="82" y1="30" x2="90" y2="38" stroke="${C.skin}" stroke-width="4" stroke-linecap="round"/>
+        <rect x="84" y="22" width="14" height="8" rx="3" fill="${C.weight}"/>
+        <path d="M96 38 L96 26 L92 32" fill="none" stroke="${C.arrow}" stroke-width="2"/>
+        <text x="60" y="84" text-anchor="middle" font-size="8" fill="${C.muted}" font-family="sans-serif">Codo sube a la cadera</text>
+      </svg>`},
+    ]
+  },
+  shoulder_press: {
+    label:'Press de Hombros de Pie',
+    steps:[
+      {label:'Inicio: codos 90°',svg:`<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="#16181f"/><line x1="0" y1="92" x2="120" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <line x1="52" y1="72" x2="48" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="68" y1="72" x2="72" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <rect x="46" y="48" width="28" height="24" rx="6" fill="${C.shirt}"/>
+        <circle cx="60" cy="40" r="9" fill="${C.skin}"/>
+        <line x1="46" y1="56" x2="28" y2="56" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="28" y1="56" x2="26" y2="44" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="74" y1="56" x2="92" y2="56" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="92" y1="56" x2="94" y2="44" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <rect x="16" y="38" width="14" height="8" rx="3" fill="${C.weight}"/>
+        <rect x="90" y="38" width="14" height="8" rx="3" fill="${C.weight}"/>
+        <text x="60" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Codos a la altura del hombro</text>
+      </svg>`},
+      {label:'Arriba: brazos extendidos',svg:`<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="#16181f"/><line x1="0" y1="92" x2="120" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <line x1="52" y1="72" x2="48" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="68" y1="72" x2="72" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <rect x="46" y="48" width="28" height="24" rx="6" fill="${C.shirt}"/>
+        <circle cx="60" cy="40" r="9" fill="${C.skin}"/>
+        <line x1="46" y1="54" x2="26" y2="30" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="74" y1="54" x2="94" y2="30" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <rect x="14" y="23" width="14" height="8" rx="3" fill="${C.weight}"/>
+        <rect x="92" y="23" width="14" height="8" rx="3" fill="${C.weight}"/>
+        <path d="M55 16 L60 8 L65 16" fill="none" stroke="${C.arrow}" stroke-width="2"/>
+        <text x="60" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Empuja hacia arriba</text>
+      </svg>`},
+    ]
+  },
+  bicep_curl: {
+    label:'Curl de Bíceps con Banda',
+    steps:[
+      {label:'Inicio: brazos extendidos',svg:`<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="#16181f"/><line x1="0" y1="92" x2="120" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <line x1="50" y1="74" x2="48" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="70" y1="74" x2="72" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <rect x="44" y="50" width="32" height="24" rx="6" fill="${C.shirt}"/>
+        <circle cx="60" cy="41" r="9" fill="${C.skin}"/>
+        <line x1="44" y1="62" x2="36" y2="82" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="76" y1="62" x2="84" y2="82" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <path d="M36 82 Q60 90 84 82" stroke="${C.band}" stroke-width="3" fill="none"/>
+        <text x="60" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Banda bajo los pies</text>
+      </svg>`},
+      {label:'Flexión: manos al hombro',svg:`<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="#16181f"/><line x1="0" y1="92" x2="120" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <line x1="50" y1="74" x2="48" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="70" y1="74" x2="72" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <rect x="44" y="50" width="32" height="24" rx="6" fill="${C.shirt}"/>
+        <circle cx="60" cy="41" r="9" fill="${C.skin}"/>
+        <line x1="44" y1="60" x2="36" y2="76" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="36" y1="76" x2="30" y2="54" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="76" y1="60" x2="84" y2="76" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="84" y1="76" x2="90" y2="54" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <path d="M36 76 Q60 90 84 76" stroke="${C.band}" stroke-width="3" fill="none"/>
+        <path d="M34 48 L30 40 L26 48" fill="none" stroke="${C.arrow}" stroke-width="2"/>
+        <text x="60" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Codos fijos, sube las manos</text>
+      </svg>`},
+    ]
+  },
+  tricep_ext: {
+    label:'Extensión de Tríceps con Banda',
+    steps:[
+      {label:'Inicio: codos arriba',svg:`<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="#16181f"/>
+        <line x1="55" y1="0" x2="65" y2="0" stroke="${C.band}" stroke-width="4"/>
+        <line x1="60" y1="0" x2="60" y2="14" stroke="${C.band}" stroke-width="3"/>
+        <line x1="50" y1="74" x2="48" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="70" y1="74" x2="72" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="0" y1="92" x2="120" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <rect x="44" y="50" width="32" height="24" rx="6" fill="${C.shirt}"/>
+        <circle cx="60" cy="41" r="9" fill="${C.skin}"/>
+        <line x1="50" y1="54" x2="44" y2="36" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="44" y1="36" x2="52" y2="20" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="70" y1="54" x2="76" y2="36" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="76" y1="36" x2="68" y2="20" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <text x="60" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Codos apuntan arriba</text>
+      </svg>`},
+      {label:'Extensión: baja los brazos',svg:`<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="#16181f"/>
+        <line x1="55" y1="0" x2="65" y2="0" stroke="${C.band}" stroke-width="4"/>
+        <line x1="60" y1="0" x2="60" y2="14" stroke="${C.band}" stroke-width="3"/>
+        <line x1="50" y1="74" x2="48" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="70" y1="74" x2="72" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="0" y1="92" x2="120" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <rect x="44" y="50" width="32" height="24" rx="6" fill="${C.shirt}"/>
+        <circle cx="60" cy="41" r="9" fill="${C.skin}"/>
+        <line x1="50" y1="54" x2="44" y2="38" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="44" y1="38" x2="46" y2="60" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="70" y1="54" x2="76" y2="38" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="76" y1="38" x2="74" y2="60" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <path d="M40 64 L46 72 L52 64" fill="none" stroke="${C.arrow}" stroke-width="2"/>
+        <text x="60" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Extiende el codo hacia abajo</text>
+      </svg>`},
+    ]
+  },
+  plank: {
+    label:'Plancha',
+    steps:[
+      {label:'Posición correcta',svg:`<svg viewBox="0 0 130 70" xmlns="http://www.w3.org/2000/svg"><rect width="130" height="70" fill="#16181f"/><line x1="0" y1="60" x2="130" y2="60" stroke="${C.ground}" stroke-width="3"/>
+        <circle cx="108" cy="36" r="8" fill="${C.skin}"/>
+        <rect x="38" y="42" width="66" height="12" rx="5" fill="${C.shirt}"/>
+        <rect x="20" y="50" width="20" height="8" rx="4" fill="${C.skin}"/>
+        <rect x="28" y="54" width="10" height="6" rx="3" fill="${C.skin}"/>
+        <rect x="100" y="54" width="10" height="6" rx="3" fill="${C.skin}"/>
+        <rect x="110" y="54" width="10" height="6" rx="3" fill="${C.skin}"/>
+        <line x1="56" y1="40" x2="56" y2="28" stroke="${C.arrow}" stroke-width="1.5" stroke-dasharray="3,2"/>
+        <text x="56" y="24" text-anchor="middle" font-size="7" fill="${C.arrow}" font-family="sans-serif">Cuerpo recto</text>
+        <text x="65" y="68" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Antebrazos y punta de pies</text>
+      </svg>`},
+    ]
+  },
+  squat: {
+    label:'Sentadilla con Mancuernas',
+    steps:[
+      {label:'De pie, mancuernas al lado',svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#16181f"/><line x1="0" y1="92" x2="100" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <line x1="40" y1="72" x2="36" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="60" y1="72" x2="64" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <rect x="34" y="48" width="32" height="24" rx="6" fill="${C.shirt}"/>
+        <circle cx="50" cy="39" r="9" fill="${C.skin}"/>
+        <line x1="34" y1="58" x2="22" y2="66" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="66" y1="58" x2="78" y2="66" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <rect x="12" y="62" width="12" height="8" rx="3" fill="${C.weight}"/>
+        <rect x="76" y="62" width="12" height="8" rx="3" fill="${C.weight}"/>
+        <text x="50" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Pies al ancho de hombros</text>
+      </svg>`},
+      {label:'Abajo: muslos paralelos',svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#16181f"/><line x1="0" y1="92" x2="100" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <line x1="40" y1="66" x2="26" y2="82" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="26" y1="82" x2="22" y2="92" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <line x1="60" y1="66" x2="74" y2="82" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="74" y1="82" x2="78" y2="92" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <rect x="34" y="44" width="32" height="22" rx="6" fill="${C.shirt}"/>
+        <circle cx="50" cy="35" r="9" fill="${C.skin}"/>
+        <line x1="34" y1="56" x2="20" y2="66" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="66" y1="56" x2="80" y2="66" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <rect x="10" y="62" width="12" height="8" rx="3" fill="${C.weight}"/>
+        <rect x="78" y="62" width="12" height="8" rx="3" fill="${C.weight}"/>
+        <text x="50" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Rodillas sobre pies</text>
+      </svg>`},
+    ]
+  },
+  rdl: {
+    label:'Peso Muerto Rumano',
+    steps:[
+      {label:'De pie, espalda recta',svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#16181f"/><line x1="0" y1="92" x2="100" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <line x1="44" y1="72" x2="42" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="56" y1="72" x2="58" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <rect x="38" y="48" width="24" height="24" rx="6" fill="${C.shirt}"/>
+        <circle cx="50" cy="39" r="9" fill="${C.skin}"/>
+        <line x1="38" y1="58" x2="28" y2="70" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="62" y1="58" x2="72" y2="70" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <rect x="18" y="66" width="12" height="8" rx="3" fill="${C.weight}"/>
+        <rect x="70" y="66" width="12" height="8" rx="3" fill="${C.weight}"/>
+        <text x="50" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Posición inicial</text>
+      </svg>`},
+      {label:'Bisagra de cadera',svg:`<svg viewBox="0 0 110 100" xmlns="http://www.w3.org/2000/svg"><rect width="110" height="100" fill="#16181f"/><line x1="0" y1="92" x2="110" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <line x1="56" y1="72" x2="52" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="66" y1="70" x2="66" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <rect x="44" y="42" width="38" height="14" rx="6" fill="${C.shirt}" transform="rotate(30,63,49)"/>
+        <circle cx="86" cy="32" r="9" fill="${C.skin}"/>
+        <line x1="56" y1="52" x2="42" y2="66" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="68" y1="48" x2="58" y2="64" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <rect x="32" y="64" width="12" height="8" rx="3" fill="${C.weight}"/>
+        <rect x="46" y="62" width="12" height="8" rx="3" fill="${C.weight}"/>
+        <path d="M82 50 L82 62 L78 56" fill="none" stroke="${C.arrow}" stroke-width="2"/>
+        <text x="55" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Cadera atrás, espalda recta</text>
+      </svg>`},
+    ]
+  },
+  lunge: {
+    label:'Zancadas Alternadas',
+    steps:[
+      {label:'Paso adelante',svg:`<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="#16181f"/><line x1="0" y1="92" x2="120" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <line x1="55" y1="62" x2="42" y2="78" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="42" y1="78" x2="36" y2="92" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <line x1="65" y1="62" x2="80" y2="74" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="80" y1="74" x2="86" y2="92" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <rect x="48" y="38" width="24" height="24" rx="6" fill="${C.shirt}"/>
+        <circle cx="60" cy="29" r="9" fill="${C.skin}"/>
+        <line x1="48" y1="50" x2="34" y2="58" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="72" y1="50" x2="86" y2="58" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <rect x="22" y="54" width="12" height="8" rx="3" fill="${C.weight}"/>
+        <rect x="86" y="54" width="12" height="8" rx="3" fill="${C.weight}"/>
+        <circle cx="80" cy="88" r="4" fill="${C.band}" opacity=".7"/>
+        <text x="60" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Rodilla trasera casi al suelo</text>
+      </svg>`},
+    ]
+  },
+  glute_bridge: {
+    label:'Puente de Glúteos con Banda',
+    steps:[
+      {label:'Inicio: tumbado',svg:`<svg viewBox="0 0 130 80" xmlns="http://www.w3.org/2000/svg"><rect width="130" height="80" fill="#16181f"/><line x1="0" y1="72" x2="130" y2="72" stroke="${C.ground}" stroke-width="3"/>
+        <circle cx="14" cy="56" r="8" fill="${C.skin}"/>
+        <rect x="20" y="50" width="42" height="12" rx="5" fill="${C.shirt}"/>
+        <line x1="60" y1="56" x2="72" y2="42" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="72" y1="42" x2="78" y2="56" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <line x1="67" y1="56" x2="79" y2="42" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="79" y1="42" x2="88" y2="56" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <path d="M62 52 Q75 46 80 52" stroke="${C.band}" stroke-width="3" fill="none"/>
+        <text x="65" y="78" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Banda sobre muslos</text>
+      </svg>`},
+      {label:'Cadera arriba, aprieta glúteos',svg:`<svg viewBox="0 0 130 80" xmlns="http://www.w3.org/2000/svg"><rect width="130" height="80" fill="#16181f"/><line x1="0" y1="72" x2="130" y2="72" stroke="${C.ground}" stroke-width="3"/>
+        <circle cx="14" cy="56" r="8" fill="${C.skin}"/>
+        <rect x="20" y="50" width="36" height="12" rx="5" fill="${C.shirt}" transform="rotate(-10,38,56)"/>
+        <ellipse cx="62" cy="42" rx="14" ry="10" fill="${C.shirt}" opacity=".9"/>
+        <line x1="66" y1="50" x2="76" y2="64" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="76" y1="64" x2="80" y2="72" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <line x1="58" y1="50" x2="50" y2="64" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="50" y1="64" x2="46" y2="72" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <path d="M50 46 Q62 38 74 46" stroke="${C.band}" stroke-width="3" fill="none"/>
+        <path d="M90 50 L90 38 L86 44" fill="none" stroke="${C.arrow}" stroke-width="2"/>
+        <text x="65" y="78" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Cadera al techo, pausa arriba</text>
+      </svg>`},
+    ]
+  },
+  calf_raise: {
+    label:'Elevación de Talones',
+    steps:[
+      {label:'Talones en el suelo',svg:`<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="100" fill="#16181f"/><line x1="0" y1="92" x2="80" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <line x1="76" y1="10" x2="76" y2="92" stroke="${C.ground}" stroke-width="4"/>
+        <circle cx="40" cy="20" r="9" fill="${C.skin}"/>
+        <rect x="30" y="28" width="20" height="28" rx="6" fill="${C.shirt}"/>
+        <line x1="34" y1="56" x2="32" y2="80" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="46" y1="56" x2="48" y2="80" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <ellipse cx="32" cy="90" rx="8" ry="4" fill="${C.skin}"/>
+        <ellipse cx="48" cy="90" rx="8" ry="4" fill="${C.skin}"/>
+        <line x1="58" y1="44" x2="76" y2="44" stroke="${C.skin}" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+        <text x="38" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Talón en el suelo</text>
+      </svg>`},
+      {label:'Punta de pies arriba',svg:`<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="100" fill="#16181f"/><line x1="0" y1="92" x2="80" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <line x1="76" y1="10" x2="76" y2="92" stroke="${C.ground}" stroke-width="4"/>
+        <circle cx="40" cy="16" r="9" fill="${C.skin}"/>
+        <rect x="30" y="24" width="20" height="28" rx="6" fill="${C.shirt}"/>
+        <line x1="34" y1="52" x2="30" y2="76" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="46" y1="52" x2="50" y2="76" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <ellipse cx="30" cy="84" rx="5" ry="4" fill="${C.skin}"/>
+        <ellipse cx="50" cy="84" rx="5" ry="4" fill="${C.skin}"/>
+        <line x1="58" y1="40" x2="76" y2="40" stroke="${C.skin}" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+        <path d="M56 28 L56 16 L52 22" fill="none" stroke="${C.arrow}" stroke-width="2"/>
+        <text x="38" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Punta de pie arriba</text>
+      </svg>`},
+    ]
+  },
+  bicycle: {
+    label:'Bicicleta Abdominal',
+    steps:[
+      {label:'Inicio: en el suelo',svg:`<svg viewBox="0 0 130 80" xmlns="http://www.w3.org/2000/svg"><rect width="130" height="80" fill="#16181f"/><line x1="0" y1="72" x2="130" y2="72" stroke="${C.ground}" stroke-width="3"/>
+        <circle cx="14" cy="48" r="8" fill="${C.skin}"/>
+        <rect x="20" y="44" width="40" height="12" rx="5" fill="${C.shirt}" transform="rotate(-10,40,50)"/>
+        <line x1="58" y1="50" x2="72" y2="40" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="72" y1="40" x2="84" y2="52" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <line x1="64" y1="52" x2="96" y2="58" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="20" y1="46" x2="8" y2="38" stroke="${C.skin}" stroke-width="4" stroke-linecap="round"/>
+        <line x1="8" y1="38" x2="14" y2="30" stroke="${C.skin}" stroke-width="4" stroke-linecap="round"/>
+        <line x1="28" y1="46" x2="36" y2="38" stroke="${C.skin}" stroke-width="4" stroke-linecap="round"/>
+        <path d="M28 38 Q44 26 60 40" stroke="${C.arrow}" stroke-width="1.5" fill="none" stroke-dasharray="3,2"/>
+        <text x="60" y="78" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Codo al lado de la cabeza</text>
+      </svg>`},
+    ]
+  },
+  side_plank: {
+    label:'Plancha Lateral',
+    steps:[
+      {label:'Posición de lado',svg:`<svg viewBox="0 0 130 80" xmlns="http://www.w3.org/2000/svg"><rect width="130" height="80" fill="#16181f"/><line x1="0" y1="72" x2="130" y2="72" stroke="${C.ground}" stroke-width="3"/>
+        <circle cx="104" cy="34" r="8" fill="${C.skin}"/>
+        <rect x="36" y="50" width="62" height="12" rx="5" fill="${C.shirt}" transform="rotate(-18,67,56)"/>
+        <rect x="16" y="62" width="22" height="8" rx="4" fill="${C.skin}"/>
+        <rect x="96" y="66" width="14" height="6" rx="3" fill="${C.skin}"/>
+        <rect x="106" y="66" width="14" height="6" rx="3" fill="${C.skin}"/>
+        <line x1="96" y1="44" x2="104" y2="26" stroke="${C.skin}" stroke-width="4" stroke-linecap="round"/>
+        <path d="M46 42 L46 30 L42 36" fill="none" stroke="${C.arrow}" stroke-width="2"/>
+        <text x="60" y="78" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Cadera arriba, cuerpo recto</text>
+      </svg>`},
+    ]
+  },
+  squat_press: {
+    label:'Sentadilla + Press Hombro',
+    steps:[
+      {label:'Abajo en sentadilla',svg:`<svg viewBox="0 0 110 100" xmlns="http://www.w3.org/2000/svg"><rect width="110" height="100" fill="#16181f"/><line x1="0" y1="92" x2="110" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <line x1="46" y1="68" x2="32" y2="84" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="32" y1="84" x2="28" y2="92" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <line x1="64" y1="68" x2="78" y2="84" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="78" y1="84" x2="82" y2="92" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <rect x="40" y="44" width="30" height="24" rx="6" fill="${C.shirt}"/>
+        <circle cx="55" cy="35" r="9" fill="${C.skin}"/>
+        <line x1="40" y1="54" x2="24" y2="54" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="24" y1="54" x2="22" y2="42" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="70" y1="54" x2="86" y2="54" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="86" y1="54" x2="88" y2="42" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <rect x="12" y="36" width="12" height="8" rx="3" fill="${C.weight}"/>
+        <rect x="86" y="36" width="12" height="8" rx="3" fill="${C.weight}"/>
+        <text x="55" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Sentadilla completa</text>
+      </svg>`},
+      {label:'Al subir, empuja arriba',svg:`<svg viewBox="0 0 110 100" xmlns="http://www.w3.org/2000/svg"><rect width="110" height="100" fill="#16181f"/><line x1="0" y1="92" x2="110" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <line x1="46" y1="72" x2="42" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="64" y1="72" x2="68" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <rect x="40" y="48" width="30" height="24" rx="6" fill="${C.shirt}"/>
+        <circle cx="55" cy="39" r="9" fill="${C.skin}"/>
+        <line x1="40" y1="56" x2="22" y2="32" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="70" y1="56" x2="88" y2="32" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <rect x="10" y="24" width="14" height="9" rx="3" fill="${C.weight}"/>
+        <rect x="86" y="24" width="14" height="9" rx="3" fill="${C.weight}"/>
+        <path d="M50 22 L55 14 L60 22" fill="none" stroke="${C.arrow}" stroke-width="2"/>
+        <text x="55" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Explosivo: sube y empuja</text>
+      </svg>`},
+    ]
+  },
+  band_row: {
+    label:'Remo con Banda Elástica',
+    steps:[
+      {label:'Brazos extendidos',svg:`<svg viewBox="0 0 130 100" xmlns="http://www.w3.org/2000/svg"><rect width="130" height="100" fill="#16181f"/><line x1="0" y1="92" x2="130" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <rect x="0" y="42" width="8" height="16" rx="2" fill="${C.ground}"/>
+        <circle cx="4" cy="50" r="4" fill="${C.band}"/>
+        <circle cx="88" cy="30" r="9" fill="${C.skin}"/>
+        <rect x="70" y="38" width="32" height="22" rx="6" fill="${C.shirt}"/>
+        <line x1="70" y1="50" x2="30" y2="50" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="102" y1="50" x2="30" y2="50" stroke="${C.skin}" stroke-width="3" stroke-linecap="round" opacity=".3"/>
+        <path d="M8 50 Q22 46 30 50" stroke="${C.band}" stroke-width="2.5" fill="none"/>
+        <line x1="76" y1="60" x2="72" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="90" y1="60" x2="94" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <text x="70" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Brazos estirados</text>
+      </svg>`},
+      {label:'Codos al cuerpo',svg:`<svg viewBox="0 0 130 100" xmlns="http://www.w3.org/2000/svg"><rect width="130" height="100" fill="#16181f"/><line x1="0" y1="92" x2="130" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <rect x="0" y="42" width="8" height="16" rx="2" fill="${C.ground}"/>
+        <circle cx="4" cy="50" r="4" fill="${C.band}"/>
+        <circle cx="88" cy="30" r="9" fill="${C.skin}"/>
+        <rect x="70" y="38" width="32" height="22" rx="6" fill="${C.shirt}"/>
+        <line x1="70" y1="50" x2="58" y2="50" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="58" y1="50" x2="62" y2="38" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="100" y1="50" x2="112" y2="50" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="112" y1="50" x2="108" y2="38" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <path d="M8 50 Q34 46 58 50" stroke="${C.band}" stroke-width="2.5" fill="none"/>
+        <line x1="76" y1="60" x2="72" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="90" y1="60" x2="94" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <path d="M56 42 L50 50 L56 58" fill="none" stroke="${C.arrow}" stroke-width="2"/>
+        <text x="70" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Junta omóplatos al tirar</text>
+      </svg>`},
+    ]
+  },
+  pushup: {
+    label:'Flexiones',
+    steps:[
+      {label:'Abajo: pecho al suelo',svg:`<svg viewBox="0 0 130 80" xmlns="http://www.w3.org/2000/svg"><rect width="130" height="80" fill="#16181f"/><line x1="0" y1="70" x2="130" y2="70" stroke="${C.ground}" stroke-width="3"/>
+        <circle cx="106" cy="44" r="8" fill="${C.skin}"/>
+        <rect x="38" y="52" width="64" height="12" rx="5" fill="${C.shirt}"/>
+        <line x1="94" y1="54" x2="102" y2="66" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="102" cy="68" rx="7" ry="5" fill="${C.skin}"/>
+        <line x1="38" y1="58" x2="28" y2="66" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="28" cy="68" rx="7" ry="5" fill="${C.skin}"/>
+        <rect x="12" y="62" width="12" height="6" rx="3" fill="${C.pants}"/>
+        <rect x="26" y="62" width="12" height="6" rx="3" fill="${C.pants}"/>
+        <text x="60" y="78" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Pecho casi toca el suelo</text>
+      </svg>`},
+      {label:'Arriba: brazos extendidos',svg:`<svg viewBox="0 0 130 80" xmlns="http://www.w3.org/2000/svg"><rect width="130" height="80" fill="#16181f"/><line x1="0" y1="70" x2="130" y2="70" stroke="${C.ground}" stroke-width="3"/>
+        <circle cx="106" cy="36" r="8" fill="${C.skin}"/>
+        <rect x="36" y="48" width="66" height="12" rx="5" fill="${C.shirt}"/>
+        <line x1="94" y1="50" x2="102" y2="64" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="102" cy="67" rx="7" ry="5" fill="${C.skin}"/>
+        <line x1="36" y1="54" x2="24" y2="64" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="24" cy="67" rx="7" ry="5" fill="${C.skin}"/>
+        <rect x="10" y="62" width="12" height="6" rx="3" fill="${C.pants}"/>
+        <rect x="24" y="62" width="12" height="6" rx="3" fill="${C.pants}"/>
+        <path d="M62 40 L62 28 L58 34" fill="none" stroke="${C.arrow}" stroke-width="2"/>
+        <text x="60" y="78" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Cuerpo recto, sube explosivo</text>
+      </svg>`},
+    ]
+  },
+  swing: {
+    label:'Swing con Mancuerna',
+    steps:[
+      {label:'Atrás: bisagra de cadera',svg:`<svg viewBox="0 0 110 100" xmlns="http://www.w3.org/2000/svg"><rect width="110" height="100" fill="#16181f"/><line x1="0" y1="92" x2="110" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <circle cx="82" cy="26" r="9" fill="${C.skin}"/>
+        <rect x="44" y="36" width="38" height="16" rx="6" fill="${C.shirt}" transform="rotate(30,63,44)"/>
+        <line x1="60" y1="58" x2="52" y2="78" stroke="${C.pants}" stroke-width="8" stroke-linecap="round"/>
+        <line x1="52" y1="78" x2="50" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="72" y1="56" x2="80" y2="76" stroke="${C.pants}" stroke-width="8" stroke-linecap="round"/>
+        <line x1="80" y1="76" x2="82" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="58" y1="48" x2="38" y2="66" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <rect x="24" y="62" width="16" height="10" rx="3" fill="${C.weight}"/>
+        <text x="55" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Mancuerna entre piernas</text>
+      </svg>`},
+      {label:'Adelante: explota la cadera',svg:`<svg viewBox="0 0 110 100" xmlns="http://www.w3.org/2000/svg"><rect width="110" height="100" fill="#16181f"/><line x1="0" y1="92" x2="110" y2="92" stroke="${C.ground}" stroke-width="3"/>
+        <circle cx="55" cy="24" r="9" fill="${C.skin}"/>
+        <rect x="38" y="32" width="34" height="24" rx="6" fill="${C.shirt}"/>
+        <line x1="44" y1="56" x2="38" y2="78" stroke="${C.pants}" stroke-width="8" stroke-linecap="round"/>
+        <line x1="38" y1="78" x2="36" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="66" y1="56" x2="72" y2="78" stroke="${C.pants}" stroke-width="8" stroke-linecap="round"/>
+        <line x1="72" y1="78" x2="74" y2="92" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="44" y1="46" x2="28" y2="36" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="66" y1="46" x2="82" y2="36" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <rect x="76" y="28" width="16" height="10" rx="3" fill="${C.weight}"/>
+        <path d="M74 22 L84 16 L88 26" fill="none" stroke="${C.arrow}" stroke-width="2"/>
+        <text x="55" y="100" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Caderas disparan, no brazos</text>
+      </svg>`},
+    ]
+  },
+  mountain_climber: {
+    label:'Mountain Climbers',
+    steps:[
+      {label:'Posición plancha alta',svg:`<svg viewBox="0 0 130 80" xmlns="http://www.w3.org/2000/svg"><rect width="130" height="80" fill="#16181f"/><line x1="0" y1="70" x2="130" y2="70" stroke="${C.ground}" stroke-width="3"/>
+        <circle cx="106" cy="34" r="8" fill="${C.skin}"/>
+        <rect x="38" y="42" width="64" height="12" rx="5" fill="${C.shirt}"/>
+        <line x1="94" y1="44" x2="102" y2="58" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="102" cy="62" rx="7" ry="5" fill="${C.skin}"/>
+        <line x1="38" y1="50" x2="28" y2="62" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="28" cy="65" rx="7" ry="5" fill="${C.skin}"/>
+        <rect x="12" y="62" width="12" height="6" rx="3" fill="${C.pants}"/>
+        <rect x="28" y="62" width="12" height="6" rx="3" fill="${C.pants}"/>
+        <text x="60" y="78" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Brazos rectos, cuerpo plano</text>
+      </svg>`},
+      {label:'Rodilla al pecho — alterna',svg:`<svg viewBox="0 0 130 80" xmlns="http://www.w3.org/2000/svg"><rect width="130" height="80" fill="#16181f"/><line x1="0" y1="70" x2="130" y2="70" stroke="${C.ground}" stroke-width="3"/>
+        <circle cx="106" cy="34" r="8" fill="${C.skin}"/>
+        <rect x="38" y="42" width="64" height="12" rx="5" fill="${C.shirt}"/>
+        <line x1="94" y1="44" x2="102" y2="58" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="102" cy="62" rx="7" ry="5" fill="${C.skin}"/>
+        <line x1="38" y1="50" x2="28" y2="62" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="28" cy="65" rx="7" ry="5" fill="${C.skin}"/>
+        <line x1="60" y1="52" x2="50" y2="36" stroke="${C.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="50" y1="36" x2="44" y2="46" stroke="${C.pants}" stroke-width="6" stroke-linecap="round"/>
+        <rect x="14" y="62" width="12" height="6" rx="3" fill="${C.pants}"/>
+        <rect x="80" y="62" width="12" height="6" rx="3" fill="${C.pants}"/>
+        <path d="M52 28 L44 36" stroke="${C.arrow}" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <defs><marker id="arrowhead" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="${C.arrow}"/></marker></defs>
+        <text x="60" y="78" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Rodilla al pecho, alterna rápido</text>
+      </svg>`},
+    ]
+  },
+  plank_tap: {
+    label:'Plancha Toque de Hombro',
+    steps:[
+      {label:'Plancha alta',svg:`<svg viewBox="0 0 130 80" xmlns="http://www.w3.org/2000/svg"><rect width="130" height="80" fill="#16181f"/><line x1="0" y1="70" x2="130" y2="70" stroke="${C.ground}" stroke-width="3"/>
+        <circle cx="106" cy="34" r="8" fill="${C.skin}"/>
+        <rect x="38" y="42" width="64" height="12" rx="5" fill="${C.shirt}"/>
+        <line x1="94" y1="44" x2="102" y2="60" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="102" cy="64" rx="7" ry="5" fill="${C.skin}"/>
+        <line x1="38" y1="50" x2="26" y2="62" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="26" cy="65" rx="7" ry="5" fill="${C.skin}"/>
+        <rect x="10" y="62" width="14" height="7" rx="3" fill="${C.pants}"/>
+        <rect x="28" y="62" width="14" height="7" rx="3" fill="${C.pants}"/>
+        <text x="60" y="78" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Pies separados para estabilidad</text>
+      </svg>`},
+      {label:'Toca el hombro opuesto',svg:`<svg viewBox="0 0 130 80" xmlns="http://www.w3.org/2000/svg"><rect width="130" height="80" fill="#16181f"/><line x1="0" y1="70" x2="130" y2="70" stroke="${C.ground}" stroke-width="3"/>
+        <circle cx="106" cy="34" r="8" fill="${C.skin}"/>
+        <rect x="38" y="42" width="64" height="12" rx="5" fill="${C.shirt}"/>
+        <line x1="94" y1="44" x2="102" y2="60" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="102" cy="64" rx="7" ry="5" fill="${C.skin}"/>
+        <line x1="38" y1="50" x2="26" y2="62" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="26" cy="65" rx="7" ry="5" fill="${C.skin}"/>
+        <rect x="10" y="62" width="14" height="7" rx="3" fill="${C.pants}"/>
+        <rect x="28" y="62" width="14" height="7" rx="3" fill="${C.pants}"/>
+        <line x1="90" y1="46" x2="92" y2="36" stroke="${C.skin}" stroke-width="5" stroke-linecap="round"/>
+        <line x1="92" y1="36" x2="100" y2="40" stroke="${C.skin}" stroke-width="4" stroke-linecap="round"/>
+        <path d="M84 32 Q90 26 96 34" stroke="${C.arrow}" stroke-width="1.5" fill="none" stroke-dasharray="2,2"/>
+        <text x="60" y="78" text-anchor="middle" font-size="7" fill="${C.muted}" font-family="sans-serif">Caderas quietas al tocar</text>
+      </svg>`},
+    ]
+  },
+};
+
+// ═══════════════════════════════════════════
+// EXERCISE DATA
+// ═══════════════════════════════════════════
+const DAYS = {
+  mar:[
+    {id:'mar1',num:1,name:'Press de pecho con mancuernas',series:4,reps:'10',restSec:90,tempo:'Controlado',diagKey:'chest_press',yt:'https://www.youtube.com/watch?v=-cpfMqSGxvg',cues:['Espalda en el suelo, rodillas dobladas','Codos a 45° del cuerpo','Exhala al subir, inhala al bajar']},
+    {id:'mar2',num:2,name:'Remo con mancuerna (por lado)',series:4,reps:'10',restSec:90,tempo:'Controlado',diagKey:'row',yt:'https://www.youtube.com/watch?v=PQ1X977ag5E',cues:['Rodilla y mano del mismo lado apoyadas','Codo cerca del cuerpo al subir','No rotar el torso']},
+    {id:'mar3',num:3,name:'Press hombro con mancuernas',series:3,reps:'10',restSec:90,tempo:'Explosivo ↑',diagKey:'shoulder_press',yt:'https://www.youtube.com/watch?v=bmy7tIopNt4',cues:['Core activado','No arquear la espalda baja','Baja lento, sube explosivo']},
+    {id:'mar4',num:4,name:'Curl de bíceps con banda',series:3,reps:'12',restSec:60,tempo:'Lento ↓',diagKey:'bicep_curl',yt:'https://www.youtube.com/watch?v=RyWX9e7imhc',cues:['Codos fijos a los lados','Contrae el bíceps arriba','Baja en 3 segundos']},
+    {id:'mar5',num:5,name:'Extensión de tríceps con banda',series:3,reps:'12',restSec:60,tempo:'Lento ↓',diagKey:'tricep_ext',yt:'https://www.youtube.com/watch?v=vC5vWtpkh64',cues:['Codos fijos, solo antebrazos','Contrae el tríceps abajo','Sube lento y controlado']},
+    {id:'mar6',num:6,name:'Plancha',series:3,reps:'40 seg',restSec:60,tempo:'—',diagKey:'plank',yt:'https://www.youtube.com/watch?v=ASdvN_XEl_c',cues:['Glúteos y abdomen contraídos','No dejar caer las caderas','Respiración constante']},
+  ],
+  jue:[
+    {id:'jue1',num:1,name:'Sentadilla con mancuernas',series:4,reps:'12',restSec:90,tempo:'Controlado',diagKey:'squat',yt:'https://www.youtube.com/watch?v=ZXwvmRSRRxY',cues:['Pies al ancho de hombros','Rodillas siguen la dirección de los pies','Pecho arriba, mirada al frente']},
+    {id:'jue2',num:2,name:'Peso muerto rumano',series:4,reps:'10',restSec:90,tempo:'Lento ↓',diagKey:'rdl',yt:'https://www.youtube.com/watch?v=7j-2w7J_9zs',cues:['Rodillas levemente flexionadas','Caderas empujan hacia atrás','Siente el estiramiento en isquiotibiales']},
+    {id:'jue3',num:3,name:'Zancadas alternadas',series:3,reps:'10/pierna',restSec:90,tempo:'Controlado',diagKey:'lunge',yt:'https://www.youtube.com/watch?v=QOVaHwm-Q6U',cues:['Torso recto, no inclinarse','Rodilla delantera no pasa el pie','Alterna piernas cada rep']},
+    {id:'jue4',num:4,name:'Puente de glúteos con banda',series:3,reps:'15',restSec:60,tempo:'Pausa 1seg ↑',diagKey:'glute_bridge',yt:'https://www.youtube.com/watch?v=wPM8icPu6H8',cues:['Pies cerca de los glúteos','Aprieta glúteos 1 segundo arriba','Baja controlado']},
+    {id:'jue5',num:5,name:'Elevación de talones',series:3,reps:'20',restSec:60,tempo:'Lento',diagKey:'calf_raise',yt:'https://www.youtube.com/watch?v=gwLzBJYoWlI',cues:['Puedes apoyarte en una pared','Sube rápido, baja en 2–3 seg','Rango completo de movimiento']},
+    {id:'jue6',num:6,name:'Bicicleta abdominal',series:3,reps:'20',restSec:60,tempo:'Controlado',diagKey:'bicycle',yt:'https://www.youtube.com/watch?v=9FGilxCbdz8',cues:['Manos detrás de la cabeza sin jalar','Codo toca la rodilla opuesta','Movimiento lento y controlado']},
+    {id:'jue7',num:7,name:'Plancha lateral',series:3,reps:'30seg/lado',restSec:60,tempo:'—',diagKey:'side_plank',yt:'https://www.youtube.com/watch?v=_rdfjFSFKcM',cues:['Cadera arriba, no dejarla caer','Brazo libre extendido arriba','Respira durante todo el tiempo']},
+  ],
+  sab:[
+    {id:'sab1',num:1,name:'Sentadilla + press hombro',series:4,reps:'10',restSec:60,tempo:'Explosivo',diagKey:'squat_press',yt:'https://www.youtube.com/watch?v=IVMBAmxHmGw',cues:['Baja en sentadilla, al subir empuja','Cadencia rápida y potente','Core firme durante todo el movimiento']},
+    {id:'sab2',num:2,name:'Remo con banda',series:4,reps:'12',restSec:60,tempo:'Controlado',diagKey:'band_row',yt:'https://www.youtube.com/watch?v=tLnlWj7LQ34',cues:['Codos cerca del cuerpo','Aprieta la espalda al llegar','Extiende completamente antes de repetir']},
+    {id:'sab3',num:3,name:'Flexiones',series:3,reps:'12',restSec:60,tempo:'Explosivo ↑',diagKey:'pushup',yt:'https://www.youtube.com/watch?v=IODxDxX7oi4',cues:['Cuerpo recto de cabeza a talones','Codos a 45°, no abiertos','Sube lo más rápido posible']},
+    {id:'sab4',num:4,name:'Swing con mancuerna',series:3,reps:'12',restSec:60,tempo:'Potente',diagKey:'swing',yt:'https://www.youtube.com/watch?v=YSxHifyI6s8',cues:['Movimiento de cadera, no de brazos','Glúteos y core al frente','Rodillas levemente flexionadas']},
+    {id:'sab5',num:5,name:'Mountain climbers',series:3,reps:'20/pierna',restSec:60,tempo:'Explosivo',diagKey:'mountain_climber',yt:'https://www.youtube.com/watch?v=nmwgirgXLYM',cues:['Caderas abajo, no subirlas','Hombros sobre las muñecas','Ritmo constante, respira bien']},
+    {id:'sab6',num:6,name:'Plancha toque de hombro',series:3,reps:'10/lado',restSec:60,tempo:'Estable',diagKey:'plank_tap',yt:'https://www.youtube.com/watch?v=LEZq7QcKLbk',cues:['Pies más separados para estabilidad','Caderas quietas, sin rotar','Movimiento lento y controlado']},
+  ]
+};
+
+// ═══════════════════════════════════════════
+// SERIES STATE — tracks chosen series count and completed series per exercise
+// ═══════════════════════════════════════════
+const exSeriesCount = {}; // exId -> 3 or 4
+const exSeriesDone  = {}; // exId -> Set of completed serie indices
+const exRepsVal     = {}; // exId -> current reps value (number or string)
+
+function getReps(exId, defaultReps) {
+  return exRepsVal[exId] !== undefined ? exRepsVal[exId] : defaultReps;
+}
+
+function adjustReps(exId, delta, defaultReps) {
+  // parse current: if string like "10/pierna" treat as "10/pierna" and only adjust numeric part
+  const cur = exRepsVal[exId] !== undefined ? exRepsVal[exId] : defaultReps;
+  const curStr = String(cur);
+  const match = curStr.match(/^(\d+)(.*)/);
+  if (!match) return;
+  const num = Math.max(1, parseInt(match[1]) + delta);
+  const suffix = match[2];
+  exRepsVal[exId] = num + suffix;
+  const valEl = document.getElementById('repsval-' + exId);
+  if (valEl) valEl.textContent = num + suffix;
+  updateSeriesTag(exId);
+}
+
+function updateSeriesTag(exId) {
+  const tag = document.getElementById('seriestag-' + exId);
+  if (!tag) return;
+  const parts = tag.textContent.split('×');
+  if (parts.length < 2) return;
+  const repsEl = document.getElementById('repsval-' + exId);
+  const reps = repsEl ? repsEl.textContent : parts[1].trim();
+  tag.textContent = parts[0].trim() + ' × ' + reps;
+}
+
+function getSeriesCount(exId, defaultVal) {
+  return exSeriesCount[exId] || defaultVal;
+}
+
+function setSeriesCount(exId, n, defaultVal) {
+  exSeriesCount[exId] = n;
+  exSeriesDone[exId] = new Set();
+  // update selector buttons
+  const wrap = document.getElementById('bullets-' + exId)?.closest('.ex-detail-inner');
+  if (wrap) {
+    wrap.querySelectorAll('.ser-btn').forEach(btn => {
+      btn.classList.toggle('active', parseInt(btn.textContent) === n);
+    });
+  }
+  renderSeriesBullets(exId, n);
+  // update header tag series count
+  updateSeriesTag(exId);
+  const tag = document.getElementById('seriestag-' + exId);
+  if (tag) {
+    const repsText = tag.textContent.split('×')[1]?.trim() || '';
+    tag.textContent = n + ' × ' + repsText;
+  }
+}
+
+function renderSeriesBullets(exId, total) {
+  const wrap = document.getElementById('bullets-' + exId);
+  if (!wrap) return;
+  const done = exSeriesDone[exId] || new Set();
+  const nextTodo = [...Array(total).keys()].find(i => !done.has(i));
+  wrap.innerHTML = [...Array(total).keys()].map(i => {
+    const isDone = done.has(i);
+    const isNext = i === nextTodo;
+    return `<div class="s-bullet ${isDone ? 'done' : isNext ? 'active-now' : ''}"
+      onclick="toggleSerie('${exId}',${i},${total})">${i+1}</div>`;
+  }).join('') + `<span class="s-bullet-label">${done.size}/${total} listas</span>`;
+  // mark exercise header as complete if all done
+  const header = document.getElementById('exheader-' + exId);
+  const extick = document.getElementById('extick-' + exId);
+  if (header && extick) {
+    const allDone = done.size >= total;
+    extick.classList.toggle('done', allDone);
+    header.classList.toggle('done-card', allDone);
+  }
+}
+
+function toggleSerie(exId, idx, total) {
+  if (!exSeriesDone[exId]) exSeriesDone[exId] = new Set();
+  if (exSeriesDone[exId].has(idx)) exSeriesDone[exId].delete(idx);
+  else exSeriesDone[exId].add(idx);
+  renderSeriesBullets(exId, total);
+}
+
+// ═══════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════
+function renderExercises(dayKey, containerId) {
+  const exs = DAYS[dayKey];
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  c.innerHTML = exs.map(ex => {
+    const diag = DIAGRAMS[ex.diagKey];
+    const stepsHTML = diag ? diag.steps.map((s,i) =>
+      `${i>0?'<div class="step-arrow">›</div>':''}
+      <div class="diagram-step">${s.svg}<div class="step-label">${s.label}</div></div>`
+    ).join('') : '';
+    const defSeries = ex.series;
+    return `<div class="ex-card" id="exheader-${ex.id}">
+      <div class="ex-card-header">
+        <div class="tick-box" id="extick-${ex.id}" onclick="event.stopPropagation()"><span class="check">✓</span></div>
+        <span class="ex-num" onclick="toggleEx('${ex.id}')">${ex.num}</span>
+        <div class="ex-info" onclick="toggleEx('${ex.id}')">
+          <div class="ex-name">${ex.name}</div>
+          <div class="ex-meta">
+            <span class="tag" id="seriestag-${ex.id}">${defSeries} series × ${ex.reps}</span>
+            <span class="tag yellow">⏱ ${ex.restSec}s descanso</span>
+            <span class="tag blue">${ex.tempo}</span>
+          </div>
+        </div>
+        <span class="ex-toggle" id="toggle-${ex.id}" onclick="toggleEx('${ex.id}')">▼</span>
+      </div>
+      <div class="ex-detail" id="detail-${ex.id}">
+        <div class="ex-detail-inner">
+          ${diag ? `<div class="ex-diagram">
+            <div class="diagram-label">${diag.label}</div>
+            <div class="diagram-steps">${stepsHTML}</div>
+          </div>` : ''}
+          <div class="ex-cues"><ul>${ex.cues.map(cue=>`<li>${cue}</li>`).join('')}</ul></div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;">
+            <div class="series-selector">
+              <label>Series:</label>
+              <button class="ser-btn ${defSeries===3?'active':''}" onclick="setSeriesCount('${ex.id}',3,${defSeries})">3</button>
+              <button class="ser-btn ${defSeries===4?'active':''}" onclick="setSeriesCount('${ex.id}',4,${defSeries})">4</button>
+            </div>
+            <div class="reps-adjuster">
+              <label>Reps:</label>
+              <button class="adj-btn" onclick="adjustReps('${ex.id}',-1,'${ex.reps}')">−</button>
+              <span class="reps-val" id="repsval-${ex.id}">${ex.reps}</span>
+              <button class="adj-btn" onclick="adjustReps('${ex.id}',1,'${ex.reps}')">+</button>
+              <span class="reps-unit">${ex.reps.toString().includes('seg') ? '' : ex.reps.toString().includes('/') ? '' : 'reps'}</span>
+            </div>
+            <div style="font-size:.7rem;color:var(--muted);margin:8px 0 6px;">Toca el número para marcar la serie completada</div>
+            <div class="series-bullets" id="bullets-${ex.id}"></div>
+            <div class="reps-adjuster" style="margin-top:10px;padding-top:10px;">
+              <label>Peso usado:</label>
+              <input type="text" id="quickw-${ex.id}"
+                style="background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 8px;font-size:.82rem;width:72px;text-align:center;font-family:'DM Sans',sans-serif;"
+                placeholder="—"
+                oninput="autoSaveWeight('${ex.id}')"
+                value="${(()=>{try{const d=JSON.parse(localStorage.getItem('rutina_pesos')||'{}');return d['week_'+currentWeek]?.['${ex.id}']||'';}catch(e){return ''}})()}">
+              <span style="font-size:.68rem;color:var(--muted);">kg</span>
+              <span id="quickw-saved-${ex.id}" style="font-size:.7rem;color:var(--green);display:none;">✓</span>
+            </div>
+          </div>
+
+          <div class="ex-buttons">
+            <a class="yt-btn" href="${ex.yt}" target="_blank" rel="noopener">▶ Ver en YouTube</a>
+            <button class="timer-btn" onclick="launchTimer(event,'${ex.id}')">⏱ Cronómetro</button>
+            <button class="ai-btn" id="aibtn-${ex.id}" onclick="askAI(event,'${ex.id}','${ex.name.replace(/'/g,"\\'")}')">✨ IA</button>
+          </div>
+          <div class="ai-response" id="airesp-${ex.id}"></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  // init bullets for each exercise
+  exs.forEach(ex => {
+    if (!exSeriesDone[ex.id]) exSeriesDone[ex.id] = new Set();
+    renderSeriesBullets(ex.id, getSeriesCount(ex.id, ex.series));
+  });
+}
+
+function toggleEx(id) {
+  const d=document.getElementById('detail-'+id);
+  const t=document.getElementById('toggle-'+id);
+  const open=d.classList.contains('open');
+  d.classList.toggle('open',!open);
+  t.classList.toggle('open',!open);
+}
+
+// ═══════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════
+const CIRC=553;
+let timerState=null,timerInterval=null;
+function launchTimer(e,exId){
+  e.stopPropagation();
+  let ex=null;
+  for(const exs of Object.values(DAYS)){ex=exs.find(x=>x.id===exId);if(ex)break;}
+  if(!ex)return;
+  const chosenSeries = getSeriesCount(ex.id, ex.series);
+  timerState={ex,phase:'work',currentSerie:1,totalSeries:chosenSeries,restSec:ex.restSec,workSec:0,restRemaining:ex.restSec,running:true};
+  updateTimerUI();
+  document.getElementById('timerOverlay').classList.add('show');
+  clearInterval(timerInterval);
+  timerInterval=setInterval(tickTimer,1000);
+}
+function tickTimer(){
+  if(!timerState||!timerState.running)return;
+  if(timerState.phase==='work'){timerState.workSec++;}
+  else{
+    timerState.restRemaining--;
+    if(timerState.restRemaining<=0){
+      // auto-mark the completed serie bullet
+      const exId = timerState.ex.id;
+      if(!exSeriesDone[exId]) exSeriesDone[exId] = new Set();
+      exSeriesDone[exId].add(timerState.currentSerie - 1);
+      renderSeriesBullets(exId, timerState.totalSeries);
+      timerState.currentSerie++;
+      if(timerState.currentSerie>timerState.totalSeries){
+        // mark last serie done
+        const exId = timerState.ex.id;
+        if(!exSeriesDone[exId]) exSeriesDone[exId] = new Set();
+        exSeriesDone[exId].add(timerState.totalSeries - 1);
+        renderSeriesBullets(exId, timerState.totalSeries);
+        clearInterval(timerInterval);
+        document.getElementById('timerDigits').textContent='✓';
+        document.getElementById('timerLabel').textContent='¡COMPLETADO!';
+        document.getElementById('timerNextLabel').textContent='🎉 Todas las series terminadas';
+        document.getElementById('ringFill').style.strokeDashoffset=CIRC;
+        return;
+      }
+      timerState.phase='work';timerState.workSec=0;
+    }
+  }
+  updateTimerUI();
+}
+function updateTimerUI(){
+  const s=timerState;
+  const badge=document.getElementById('timerTypeBadge');
+  const ring=document.getElementById('ringFill');
+  document.getElementById('timerExName').textContent=s.ex.name;
+  document.getElementById('tSerie').textContent=s.currentSerie;
+  document.getElementById('tTotal').textContent=s.totalSeries;
+  document.getElementById('tReps').textContent=s.ex.reps;
+  if(s.phase==='work'){
+    badge.textContent=`SERIE ${s.currentSerie}`;badge.className='timer-type-badge work';
+    ring.classList.remove('rest-color');
+    document.getElementById('timerDigits').textContent=fmt(s.workSec);
+    document.getElementById('timerLabel').textContent='EN CURSO';
+    ring.style.strokeDashoffset=CIRC-Math.min(s.workSec/120,1)*CIRC;
+    document.getElementById('timerNextLabel').textContent=`Siguiente: descanso de ${s.restSec} seg`;
+  }else{
+    badge.textContent='DESCANSO';badge.className='timer-type-badge rest-phase';
+    ring.classList.add('rest-color');
+    document.getElementById('timerDigits').textContent=fmt(s.restRemaining);
+    document.getElementById('timerLabel').textContent='DESCANSANDO';
+    ring.style.strokeDashoffset=CIRC-(s.restRemaining/s.restSec)*CIRC;
+    document.getElementById('timerNextLabel').textContent=s.currentSerie<s.totalSeries?`Siguiente: Serie ${s.currentSerie+1} de ${s.totalSeries}`:'Última serie';
+  }
+  document.getElementById('tcPlayPause').textContent=s.running?'⏸ Pausar':'▶ Reanudar';
+}
+function fmt(sec){return Math.floor(sec/60)+':'+(sec%60).toString().padStart(2,'0');}
+function timerToggle(){if(!timerState)return;timerState.running=!timerState.running;document.getElementById('tcPlayPause').textContent=timerState.running?'⏸ Pausar':'▶ Reanudar';}
+function timerSkip(){
+  if(!timerState)return;
+  if(timerState.phase==='work'){timerState.phase='rest';timerState.restRemaining=timerState.restSec;}
+  else{timerState.currentSerie++;if(timerState.currentSerie>timerState.totalSeries){timerClose();return;}timerState.phase='work';timerState.workSec=0;}
+  updateTimerUI();
+}
+function timerClose(){clearInterval(timerInterval);timerState=null;document.getElementById('timerOverlay').classList.remove('show');}
+
+// ═══════════════════════════════════════════
+// AI EXPLANATION
+// ═══════════════════════════════════════════
+async function askAI(e,id,name){
+  e.stopPropagation();
+  const btn=document.getElementById('aibtn-'+id);
+  const resp=document.getElementById('airesp-'+id);
+  btn.classList.add('loading');btn.textContent='⏳';
+  resp.classList.remove('visible');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:`Explica el ejercicio "${name}" en español muy breve y práctico para alguien que entrena en casa. 1) posición inicial, 2) movimiento paso a paso, 3) error más común. Máximo 100 palabras. Solo texto plano con números.`}]})});
+    const data=await res.json();
+    resp.textContent=data.content?.find(b=>b.type==='text')?.text||'Sin respuesta.';
+    resp.classList.add('visible');btn.textContent='✅ IA';btn.classList.remove('loading');
+  }catch(err){resp.textContent='Error. Intenta de nuevo.';resp.classList.add('visible');btn.textContent='✨ IA';btn.classList.remove('loading');}
+}
+
+// ═══════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════
+function showTab(id,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='pesos')renderPesos();
+}
+
+// ═══════════════════════════════════════════
+// WEIGHT LOG
+// ═══════════════════════════════════════════
+const LOG_EXERCISES={
+  martes:[{id:'mar1',name:'Press pecho mancuernas',unit:'kg c/mano'},{id:'mar2',name:'Remo mancuerna',unit:'kg c/mano'},{id:'mar3',name:'Press hombro',unit:'kg c/mano'},{id:'mar4',name:'Curl bíceps banda',unit:'resist.'},{id:'mar5',name:'Extensión tríceps banda',unit:'resist.'}],
+  jueves:[{id:'jue1',name:'Sentadilla mancuernas',unit:'kg c/mano'},{id:'jue2',name:'Peso muerto rumano',unit:'kg c/mano'},{id:'jue3',name:'Zancadas',unit:'kg c/mano'}],
+  sabado:[{id:'sab1',name:'Squat + press hombro',unit:'kg c/mano'},{id:'sab4',name:'Swing mancuerna',unit:'kg'}]
+};
+const WEEKS=['Sem 1','Sem 2','Sem 3','Sem 4','Sem 5','Sem 6','Sem 7','Sem 8'];
+let currentWeek=0,allData={};
+try{allData=JSON.parse(localStorage.getItem('rutina_pesos')||'{}');}catch(e){}
+function renderPesos(){
+  document.getElementById('weekSelector').innerHTML=WEEKS.map((w,i)=>`<button class="wk-btn ${i===currentWeek?'active':''}" onclick="selectWeek(${i})">${w}</button>`).join('');
+  renderLogTable();renderProgress();
+}
+function selectWeek(i){currentWeek=i;renderPesos();refreshQuickWeights();}
+function renderLogTable(){
+  const saved=allData['week_'+currentWeek]||{};
+  let html='';
+  for(const [day,exs] of Object.entries(LOG_EXERCISES)){
+    const label=day==='martes'?'💪 Martes':day==='jueves'?'🦵 Jueves':'🔥 Sábado';
+    html+=`<div class="log-day-label">${label}</div><table class="log-table"><thead><tr><th>Ejercicio</th><th>Peso</th></tr></thead><tbody>`;
+    for(const ex of exs){html+=`<tr><td><div style="font-size:.82rem">${ex.name}</div><div style="font-size:.72rem;color:var(--muted)">${ex.unit}</div></td><td><input class="weight-input" id="inp_${ex.id}" type="text" placeholder="—" value="${saved[ex.id]||''}"></td></tr>`;}
+    html+=`</tbody></table>`;
+  }
+  document.getElementById('logContent').innerHTML=html;
+}
+function saveWeights(){
+  const wKey='week_'+currentWeek;
+  if(!allData[wKey])allData[wKey]={};
+  for(const exs of Object.values(LOG_EXERCISES)){for(const ex of exs){const inp=document.getElementById('inp_'+ex.id);if(inp)allData[wKey][ex.id]=inp.value;}}
+  try{localStorage.setItem('rutina_pesos',JSON.stringify(allData));}catch(e){}
+  const conf=document.getElementById('saveConfirm');conf.style.display='block';setTimeout(()=>conf.style.display='none',2500);
+  refreshQuickWeights();
+  renderProgress();
+}
+function renderProgress(){
+  let html='';
+  for(const [day,exs] of Object.entries(LOG_EXERCISES)){
+    const label=day==='martes'?'💪 Martes':day==='jueves'?'🦵 Jueves':'🔥 Sábado';
+    html+=`<div class="prog-card"><h4>${label}</h4>`;
+    for(const ex of exs){
+      html+=`<div class="prog-ex"><span style="flex:1;font-size:.78rem;min-width:90px">${ex.name}</span><div class="prog-weights">`;
+      const withData=Object.keys(allData).map(k=>parseInt(k.split('_')[1])).filter(i=>allData['week_'+i]?.[ex.id]);
+      const latest=withData.length?Math.max(...withData):-1;let hasAny=false;
+      for(let w=0;w<WEEKS.length;w++){const val=allData['week_'+w]?.[ex.id];if(val){html+=`<span class="prog-chip ${w===latest?'latest':''}">${WEEKS[w]}: ${val}</span>`;hasAny=true;}}
+      if(!hasAny)html+=`<span style="font-size:.72rem;color:var(--muted)">Sin datos aún</span>`;
+      html+=`</div></div>`;
+    }
+    html+=`</div>`;
+  }
+  document.getElementById('progressGrid').innerHTML=html;
+}
+
+// Auto-save weight from quick input inside exercise card
+function autoSaveWeight(exId) {
+  const inp = document.getElementById('quickw-' + exId);
+  if (!inp) return;
+  const wKey = 'week_' + currentWeek;
+  if (!allData[wKey]) allData[wKey] = {};
+  allData[wKey][exId] = inp.value;
+  try { localStorage.setItem('rutina_pesos', JSON.stringify(allData)); } catch(e){}
+  // show saved indicator briefly
+  const saved = document.getElementById('quickw-saved-' + exId);
+  if (saved) { saved.style.display = 'inline'; clearTimeout(saved._t); saved._t = setTimeout(() => saved.style.display = 'none', 1500); }
+  // also sync tab log if open
+  const tabInp = document.getElementById('inp_' + exId);
+  if (tabInp) tabInp.value = inp.value;
+}
+
+// Refresh quick-weight inputs when week changes
+function refreshQuickWeights() {
+  const saved = allData['week_' + currentWeek] || {};
+  // all exercise ids across all days
+  Object.values(DAYS).flat().forEach(ex => {
+    const inp = document.getElementById('quickw-' + ex.id);
+    if (inp) inp.value = saved[ex.id] || '';
+  });
+}
+
+// Export weights as plain text
+function exportWeights() {
+  let txt = '📊 REGISTRO DE PESOS — MI RUTINA\n';
+  txt += '================================\n\n';
+  for (let w = 0; w < WEEKS.length; w++) {
+    const wData = allData['week_' + w];
+    if (!wData || !Object.values(wData).some(v => v)) continue;
+    txt += `── ${WEEKS[w]} ──\n`;
+    for (const [day, exs] of Object.entries(LOG_EXERCISES)) {
+      const label = day === 'martes' ? 'Martes' : day === 'jueves' ? 'Jueves' : 'Sábado';
+      let dayHasData = false;
+      let dayTxt = `  ${label}:\n`;
+      for (const ex of exs) {
+        const val = wData[ex.id];
+        if (val) { dayTxt += `    • ${ex.name}: ${val} ${ex.unit}\n`; dayHasData = true; }
+      }
+      if (dayHasData) txt += dayTxt;
+    }
+    txt += '\n';
+  }
+  // Copy to clipboard
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(txt).then(() => {
+      const btn = document.getElementById('exportBtn');
+      if (btn) { btn.textContent = '✅ Copiado'; setTimeout(() => btn.textContent = '📋 Exportar / Copiar', 2000); }
+    }).catch(() => fallbackCopy(txt));
+  } else { fallbackCopy(txt); }
+}
+
+function fallbackCopy(txt) {
+  const ta = document.createElement('textarea');
+  ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); } catch(e){}
+  document.body.removeChild(ta);
+  const btn = document.getElementById('exportBtn');
+  if (btn) { btn.textContent = '✅ Copiado'; setTimeout(() => btn.textContent = '📋 Exportar / Copiar', 2000); }
+}
+
+// ═══════════════════════════════════════════
+// WARMUP DATA
+// ═══════════════════════════════════════════
+const SK = { skin:'#e8b896', shirt:'#47c8ff', pants:'#2d5a8e', ground:'#2a2d3a', arrow:'#4cff91', muted:'#7a7d8a', band:'#ff6b47' };
+
+const WU_SVGS = {
+  jog: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="40" cy="14" r="8" fill="${SK.skin}"/>
+    <rect x="32" y="22" width="16" height="20" rx="5" fill="${SK.shirt}"/>
+    <line x1="35" y1="42" x2="26" y2="60" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="26" y1="60" x2="20" y2="72" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="45" y1="42" x2="52" y2="55" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="52" y1="55" x2="60" y2="62" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="32" y1="28" x2="20" y2="36" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="48" y1="28" x2="60" y2="36" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Trote suave</text></svg>`,
+
+  hip_circles: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="40" cy="12" r="8" fill="${SK.skin}"/>
+    <rect x="32" y="20" width="16" height="18" rx="5" fill="${SK.shirt}"/>
+    <line x1="35" y1="38" x2="32" y2="58" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="32" y1="58" x2="30" y2="72" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="45" y1="38" x2="48" y2="58" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="48" y1="58" x2="50" y2="72" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="32" y1="26" x2="24" y2="28" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="48" y1="26" x2="56" y2="28" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <ellipse cx="40" cy="36" rx="10" ry="6" fill="none" stroke="${SK.arrow}" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <path d="M50 33 L52 38 L47 37" fill="${SK.arrow}"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Círculos de cadera</text></svg>`,
+
+  skipping: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="40" cy="12" r="8" fill="${SK.skin}"/>
+    <rect x="32" y="20" width="16" height="18" rx="5" fill="${SK.shirt}"/>
+    <line x1="35" y1="38" x2="30" y2="52" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="30" y1="52" x2="26" y2="64" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="45" y1="38" x2="50" y2="46" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="50" y1="46" x2="44" y2="54" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="32" y1="26" x2="22" y2="34" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="48" y1="26" x2="58" y2="34" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <path d="M36 66 L40 58 L44 66" fill="none" stroke="${SK.arrow}" stroke-width="1.5"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Skipping bajo</text></svg>`,
+
+  dynamic_stretch: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="40" cy="14" r="8" fill="${SK.skin}"/>
+    <rect x="32" y="22" width="16" height="18" rx="5" fill="${SK.shirt}"/>
+    <line x1="34" y1="40" x2="22" y2="58" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="22" y1="58" x2="18" y2="72" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="46" y1="40" x2="54" y2="52" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="54" y1="52" x2="62" y2="44" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="32" y1="28" x2="18" y2="24" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="48" y1="28" x2="62" y2="24" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <path d="M56 40 L62 46 L56 50" fill="none" stroke="${SK.arrow}" stroke-width="1.5"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Estiramiento dinámico</text></svg>`,
+
+  acceleration: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="50" cy="12" r="8" fill="${SK.skin}"/>
+    <rect x="42" y="20" width="16" height="18" rx="5" fill="${SK.shirt}"/>
+    <line x1="44" y1="38" x2="38" y2="54" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="38" y1="54" x2="34" y2="66" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="54" y1="38" x2="60" y2="50" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="60" y1="50" x2="56" y2="60" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="42" y1="26" x2="30" y2="32" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="58" y1="26" x2="70" y2="22" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <path d="M14 54 L26 54" stroke="${SK.arrow}" stroke-width="2"/><path d="M22 50 L26 54 L22 58" fill="${SK.arrow}"/>
+    <path d="M10 60 L22 60" stroke="${SK.arrow}" stroke-width="1.5" opacity=".6"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Aceleración progresiva</text></svg>`,
+
+  shoulder_rot: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="40" cy="12" r="8" fill="${SK.skin}"/>
+    <rect x="32" y="20" width="16" height="18" rx="5" fill="${SK.shirt}"/>
+    <line x1="34" y1="38" x2="30" y2="58" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="46" y1="38" x2="50" y2="58" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="32" y1="24" x2="16" y2="24" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="48" y1="24" x2="64" y2="24" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <path d="M12 20 Q8 28 14 34" fill="none" stroke="${SK.arrow}" stroke-width="1.5"/>
+    <path d="M12 34 L16 30 L18 36" fill="${SK.arrow}"/>
+    <path d="M68 20 Q72 28 66 34" fill="none" stroke="${SK.arrow}" stroke-width="1.5"/>
+    <path d="M68 34 L64 30 L62 36" fill="${SK.arrow}"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Rotación de hombros</text></svg>`,
+
+  elbow_circles: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="40" cy="12" r="8" fill="${SK.skin}"/>
+    <rect x="32" y="20" width="16" height="18" rx="5" fill="${SK.shirt}"/>
+    <line x1="34" y1="38" x2="30" y2="58" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="46" y1="38" x2="50" y2="58" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="32" y1="26" x2="20" y2="26" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="20" y1="26" x2="18" y2="36" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="48" y1="26" x2="60" y2="26" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="60" y1="26" x2="62" y2="36" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <ellipse cx="18" cy="32" rx="5" ry="5" fill="none" stroke="${SK.arrow}" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <ellipse cx="62" cy="32" rx="5" ry="5" fill="none" stroke="${SK.arrow}" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Círculos de codo</text></svg>`,
+
+  band_ext_rot: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="40" cy="12" r="8" fill="${SK.skin}"/>
+    <rect x="32" y="20" width="16" height="18" rx="5" fill="${SK.shirt}"/>
+    <line x1="34" y1="38" x2="30" y2="58" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="46" y1="38" x2="50" y2="58" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="32" y1="26" x2="20" y2="30" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="48" y1="26" x2="60" y2="30" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <path d="M20 30 Q14 34 18 40" stroke="${SK.band}" stroke-width="2" fill="none"/>
+    <path d="M60 30 Q66 34 62 40" stroke="${SK.band}" stroke-width="2" fill="none"/>
+    <path d="M16 38 L20 42 L22 37" fill="${SK.arrow}"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Rotación externa banda</text></svg>`,
+
+  wall_pushup: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <line x1="72" y1="0" x2="72" y2="72" stroke="${SK.ground}" stroke-width="3"/>
+    <circle cx="30" cy="18" r="8" fill="${SK.skin}"/>
+    <rect x="22" y="26" width="16" height="20" rx="5" fill="${SK.shirt}" transform="rotate(10,30,36)"/>
+    <line x1="24" y1="46" x2="22" y2="62" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="36" y1="46" x2="38" y2="62" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="22" y1="32" x2="56" y2="22" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="38" y1="32" x2="66" y2="30" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <ellipse cx="58" cy="22" rx="5" ry="5" fill="${SK.skin}"/>
+    <ellipse cx="66" cy="30" rx="5" ry="5" fill="${SK.skin}"/>
+    <path d="M42 38 L50 36" stroke="${SK.arrow}" stroke-width="1.5"/><path d="M48 33 L52 36 L50 41" fill="${SK.arrow}"/>
+    <text x="36" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Flexión en pared</text></svg>`,
+
+  chest_open: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="40" cy="12" r="8" fill="${SK.skin}"/>
+    <rect x="32" y="20" width="16" height="18" rx="5" fill="${SK.shirt}"/>
+    <line x1="34" y1="38" x2="30" y2="56" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="46" y1="38" x2="50" y2="56" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="32" y1="24" x2="10" y2="30" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="48" y1="24" x2="70" y2="30" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <path d="M8 26 L6 32 L12 30" fill="${SK.arrow}"/>
+    <path d="M72 26 L74 32 L68 30" fill="${SK.arrow}"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Apertura de pecho</text></svg>`,
+
+  static_plank: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="68" x2="80" y2="68" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="66" cy="44" r="7" fill="${SK.skin}"/>
+    <rect x="22" y="50" width="42" height="10" rx="4" fill="${SK.shirt}"/>
+    <rect x="10" y="56" width="14" height="6" rx="3" fill="${SK.skin}"/>
+    <rect x="62" y="60" width="8" height="6" rx="3" fill="${SK.skin}"/>
+    <rect x="70" y="60" width="8" height="6" rx="3" fill="${SK.skin}"/>
+    <line x1="38" y1="48" x2="38" y2="40" stroke="${SK.arrow}" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Plancha 20 seg</text></svg>`,
+
+  squat_bw: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <line x1="28" y1="52" x2="18" y2="66" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="18" y1="66" x2="14" y2="72" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="52" y1="52" x2="62" y2="66" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="62" y1="66" x2="66" y2="72" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <rect x="30" y="32" width="20" height="20" rx="5" fill="${SK.shirt}"/>
+    <circle cx="40" cy="24" r="8" fill="${SK.skin}"/>
+    <line x1="30" y1="42" x2="16" y2="52" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="50" y1="42" x2="64" y2="52" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Sentadilla sin peso</text></svg>`,
+
+  lunge_bw: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <line x1="36" y1="50" x2="26" y2="64" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="26" y1="64" x2="22" y2="72" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="44" y1="50" x2="56" y2="60" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="56" y1="60" x2="62" y2="72" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <rect x="32" y="28" width="16" height="22" rx="5" fill="${SK.shirt}"/>
+    <circle cx="40" cy="20" r="8" fill="${SK.skin}"/>
+    <circle cx="56" cy="68" r="4" fill="${SK.band}" opacity=".5"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Zancada sin peso</text></svg>`,
+
+  leg_swing: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <line x1="10" y1="0" x2="10" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="34" cy="14" r="8" fill="${SK.skin}"/>
+    <rect x="26" y="22" width="16" height="20" rx="5" fill="${SK.shirt}"/>
+    <line x1="26" y1="30" x2="12" y2="32" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="28" y1="42" x2="26" y2="62" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="26" y1="62" x2="24" y2="72" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="42" y1="42" x2="52" y2="30" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="52" y1="30" x2="60" y2="40" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <path d="M54 56 Q62 46 56 34" fill="none" stroke="${SK.arrow}" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Apertura lateral pierna</text></svg>`,
+
+  glute_bridge_bw: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="10" cy="54" r="7" fill="${SK.skin}"/>
+    <rect x="14" y="48" width="24" height="10" rx="4" fill="${SK.shirt}" transform="rotate(-8,26,53)"/>
+    <ellipse cx="42" cy="40" rx="10" ry="8" fill="${SK.shirt}" opacity=".9"/>
+    <line x1="44" y1="48" x2="52" y2="62" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="52" y1="62" x2="56" y2="72" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="38" y1="48" x2="32" y2="62" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="32" y1="62" x2="30" y2="72" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <path d="M62 46 L62 36 L58 42" fill="none" stroke="${SK.arrow}" stroke-width="1.5"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Puente glúteo</text></svg>`,
+
+  jumping_jacks: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="40" cy="12" r="8" fill="${SK.skin}"/>
+    <rect x="32" y="20" width="16" height="18" rx="5" fill="${SK.shirt}"/>
+    <line x1="34" y1="38" x2="22" y2="58" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="22" y1="58" x2="16" y2="70" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="46" y1="38" x2="58" y2="58" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="58" y1="58" x2="64" y2="70" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="32" y1="24" x2="14" y2="14" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="48" y1="24" x2="66" y2="14" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Saltos de tijera</text></svg>`,
+
+  torso_rot: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="40" cy="12" r="8" fill="${SK.skin}"/>
+    <rect x="32" y="20" width="16" height="18" rx="5" fill="${SK.shirt}"/>
+    <line x1="34" y1="38" x2="30" y2="56" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="46" y1="38" x2="50" y2="56" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="32" y1="26" x2="14" y2="32" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="48" y1="26" x2="66" y2="20" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <path d="M38 32 Q30 38 38 42" fill="none" stroke="${SK.arrow}" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <path d="M42 32 Q50 38 42 42" fill="none" stroke="${SK.arrow}" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Rotación de torso</text></svg>`,
+
+  high_knees: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="40" cy="12" r="8" fill="${SK.skin}"/>
+    <rect x="32" y="20" width="16" height="18" rx="5" fill="${SK.shirt}"/>
+    <line x1="34" y1="38" x2="28" y2="56" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="28" y1="56" x2="24" y2="70" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="46" y1="38" x2="50" y2="48" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="50" y1="48" x2="42" y2="52" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="32" y1="28" x2="20" y2="36" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="48" y1="28" x2="60" y2="36" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <path d="M46 38 L46 28 L42 34" fill="none" stroke="${SK.arrow}" stroke-width="1.5"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Rodillas al pecho</text></svg>`,
+
+  breathing: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="40" cy="12" r="8" fill="${SK.skin}"/>
+    <rect x="32" y="20" width="16" height="18" rx="5" fill="${SK.shirt}"/>
+    <line x1="34" y1="38" x2="30" y2="58" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="46" y1="38" x2="50" y2="58" stroke="${SK.pants}" stroke-width="6" stroke-linecap="round"/>
+    <line x1="32" y1="24" x2="18" y2="20" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="48" y1="24" x2="62" y2="20" stroke="${SK.skin}" stroke-width="4" stroke-linecap="round"/>
+    <ellipse cx="40" cy="34" rx="8" ry="5" fill="none" stroke="${SK.arrow}" stroke-width="1.5" stroke-dasharray="3,2" opacity=".7"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Respiración profunda</text></svg>`,
+
+  passes: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#16181f"/>
+    <line x1="0" y1="72" x2="80" y2="72" stroke="${SK.ground}" stroke-width="2"/>
+    <circle cx="20" cy="20" r="7" fill="${SK.skin}"/>
+    <rect x="13" y="27" width="14" height="16" rx="4" fill="${SK.shirt}"/>
+    <line x1="14" y1="43" x2="12" y2="58" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="27" y1="43" x2="28" y2="58" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="27" y1="31" x2="38" y2="36" stroke="${SK.skin}" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="60" cy="20" r="7" fill="${SK.skin}"/>
+    <rect x="53" y="27" width="14" height="16" rx="4" fill="${SK.shirt}"/>
+    <line x1="54" y1="43" x2="52" y2="58" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="67" y1="43" x2="68" y2="58" stroke="${SK.pants}" stroke-width="5" stroke-linecap="round"/>
+    <line x1="53" y1="31" x2="42" y2="36" stroke="${SK.skin}" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="40" cy="38" rx="6" ry="5" fill="${SK.band}" opacity=".8"/>
+    <path d="M26 36 L34 36" stroke="${SK.arrow}" stroke-width="1.5"/><path d="M32 33 L36 36 L32 39" fill="${SK.arrow}"/>
+    <text x="40" y="79" text-anchor="middle" font-size="7" fill="${SK.muted}" font-family="sans-serif">Pases cortos</text></svg>`,
+};
+
+const WARMUPS = {
+  lun: [
+    { id:'wu_lun1', icon:'🏃', name:'Trote suave', time:'3 min', svgKey:'jog', desc:'<b>Cómo:</b> Trota en el lugar o en una línea recta a ritmo cómodo. <b>Objetivo:</b> Elevar la temperatura corporal y activar la circulación.', yt:'https://www.youtube.com/watch?v=zZgxqBslkGs' },
+    { id:'wu_lun2', icon:'⭕', name:'Movilidad de cadera', time:'1 min', svgKey:'hip_circles', desc:'<b>Cómo:</b> De pie, manos en la cadera. Dibuja círculos amplios con la pelvis, 10 en cada dirección. <b>Objetivo:</b> Soltar la articulación de la cadera.', yt:'https://www.youtube.com/watch?v=P3dzI9opLGE' },
+    { id:'wu_lun3', icon:'⬆️', name:'Skipping bajo', time:'1 min', svgKey:'skipping', desc:'<b>Cómo:</b> Trota en el lugar levantando ligeramente las rodillas. <b>Objetivo:</b> Activar cuádriceps y mejorar coordinación.', yt:'https://www.youtube.com/watch?v=ZZZoCNMU48U' },
+    { id:'wu_lun4', icon:'⚽', name:'Pases cortos suaves', time:'2 min', svgKey:'passes', desc:'<b>Cómo:</b> Pases al ras del suelo con un compañero o contra la pared a distancia corta, suave. <b>Objetivo:</b> Activar la técnica y la concentración.', yt:'https://www.youtube.com/watch?v=AmNpFQPnCeg' },
+    { id:'wu_lun5', icon:'🦵', name:'Estiramientos dinámicos', time:'2 min', svgKey:'dynamic_stretch', desc:'<b>Cómo:</b> Balanceo de piernas al frente y al costado, círculos de tobillo, elevación de rodillas. <b>Objetivo:</b> Movilizar tren inferior antes del fútbol.', yt:'https://www.youtube.com/watch?v=YdKM-TaAiRo' },
+    { id:'wu_lun6', icon:'💨', name:'Aceleración progresiva', time:'1 min', svgKey:'acceleration', desc:'<b>Cómo:</b> Corre 20–30 m comenzando lento y aumentando la velocidad al 80%. Repite 2–3 veces. <b>Objetivo:</b> Preparar el sistema nervioso para sprints.', yt:'https://www.youtube.com/watch?v=7kTDPbF5BjM' },
+  ],
+  mar: [
+    { id:'wu_mar1', icon:'⭕', name:'Rotación de hombros', time:'1 min', svgKey:'shoulder_rot', desc:'<b>Cómo:</b> Brazos extendidos, dibuja círculos grandes hacia atrás y luego hacia adelante. 10 en cada dirección. <b>Objetivo:</b> Calentar articulación del hombro.', yt:'https://www.youtube.com/watch?v=P3dzI9opLGE' },
+    { id:'wu_mar2', icon:'💪', name:'Círculos de codo', time:'1 min', svgKey:'elbow_circles', desc:'<b>Cómo:</b> Manos en los hombros, dibuja círculos con los codos hacia adelante y atrás. 10 en cada dirección. <b>Objetivo:</b> Movilizar el codo y hombro.', yt:'https://www.youtube.com/watch?v=shcSlZEnNp0' },
+    { id:'wu_mar3', icon:'🔴', name:'Rotación externa con banda', time:'2×12 reps', svgKey:'band_ext_rot', desc:'<b>Cómo:</b> Codo pegado al costado a 90°, banda en las manos. Gira el antebrazo hacia afuera. <b>Objetivo:</b> Activar manguito rotador y prevenir lesiones.', yt:'https://www.youtube.com/watch?v=i54I3nQpwK0' },
+    { id:'wu_mar4', icon:'🤲', name:'Flexiones en la pared', time:'2×10 reps', svgKey:'wall_pushup', desc:'<b>Cómo:</b> Manos en la pared, inclínate y empuja suavemente. <b>Objetivo:</b> Activar pectoral, tríceps y hombro con carga mínima.', yt:'https://www.youtube.com/watch?v=e_f5oodNEcI' },
+    { id:'wu_mar5', icon:'🦅', name:'Apertura de pecho', time:'1 min', svgKey:'chest_open', desc:'<b>Cómo:</b> Brazos hacia los lados, llévalos al frente y ábrelos fuerte hacia atrás. <b>Objetivo:</b> Estirar pectoral y activar espalda alta.', yt:'https://www.youtube.com/watch?v=mwDgFY86zck' },
+    { id:'wu_mar6', icon:'📏', name:'Plancha estática', time:'20 seg', svgKey:'static_plank', desc:'<b>Cómo:</b> Antebrazos en el suelo, cuerpo recto. Mantén 20 segundos. <b>Objetivo:</b> Activar core antes del entrenamiento.', yt:'https://www.youtube.com/watch?v=ASdvN_XEl_c' },
+  ],
+  jue: [
+    { id:'wu_jue1', icon:'🏃', name:'Trote en lugar', time:'2 min', svgKey:'jog', desc:'<b>Cómo:</b> Trota en el lugar a ritmo cómodo. <b>Objetivo:</b> Elevar temperatura corporal y preparar piernas.', yt:'https://www.youtube.com/watch?v=zZgxqBslkGs' },
+    { id:'wu_jue2', icon:'⭕', name:'Círculos de cadera', time:'1 min', svgKey:'hip_circles', desc:'<b>Cómo:</b> Manos en la cadera, pies al ancho de hombros. Dibuja círculos amplios con la pelvis. 10 en cada sentido. <b>Objetivo:</b> Soltar cadera para sentadillas y zancadas.', yt:'https://www.youtube.com/watch?v=P3dzI9opLGE' },
+    { id:'wu_jue3', icon:'🦵', name:'Sentadilla sin peso', time:'2×10 reps', svgKey:'squat_bw', desc:'<b>Cómo:</b> Sentadilla normal sin carga, bajando lento. <b>Objetivo:</b> Activar cuádriceps, glúteos y cadera antes de usar peso.', yt:'https://www.youtube.com/watch?v=ZXwvmRSRRxY' },
+    { id:'wu_jue4', icon:'👣', name:'Zancada sin peso', time:'1×8/pierna', svgKey:'lunge_bw', desc:'<b>Cómo:</b> Zancada alternada sin mancuernas, ritmo lento. <b>Objetivo:</b> Activar glúteos y estabilizadores de rodilla.', yt:'https://www.youtube.com/watch?v=QOVaHwm-Q6U' },
+    { id:'wu_jue5', icon:'🔄', name:'Apertura lateral de pierna', time:'1 min', svgKey:'leg_swing', desc:'<b>Cómo:</b> Apoyado en una pared, balancea la pierna al costado de forma controlada. 10 por lado. <b>Objetivo:</b> Movilizar abductores y cadera.', yt:'https://www.youtube.com/watch?v=YdKM-TaAiRo' },
+    { id:'wu_jue6', icon:'🍑', name:'Puente glúteo sin banda', time:'1×15 reps', svgKey:'glute_bridge_bw', desc:'<b>Cómo:</b> Tumbado, empuja las caderas al techo apretando glúteos, sin banda. <b>Objetivo:</b> Activar glúteos y zona lumbar.', yt:'https://www.youtube.com/watch?v=wPM8icPu6H8' },
+  ],
+  sab: [
+    { id:'wu_sab1', icon:'⭐', name:'Saltos de tijera suaves', time:'1 min', svgKey:'jumping_jacks', desc:'<b>Cómo:</b> Jumping jacks a ritmo moderado. <b>Objetivo:</b> Elevar frecuencia cardíaca y calentar todo el cuerpo.', yt:'https://www.youtube.com/watch?v=iSSAk4XCsRA' },
+    { id:'wu_sab2', icon:'🌀', name:'Rotación de torso', time:'1 min', svgKey:'torso_rot', desc:'<b>Cómo:</b> Pies al ancho de hombros, brazos extendidos. Gira el torso de lado a lado suavemente. <b>Objetivo:</b> Movilizar columna y oblicuos.', yt:'https://www.youtube.com/watch?v=P3dzI9opLGE' },
+    { id:'wu_sab3', icon:'🦵', name:'Sentadilla + rotación', time:'1×10 reps', svgKey:'squat_bw', desc:'<b>Cómo:</b> Baja en sentadilla y al subir gira el torso a un lado. Alterna lados. <b>Objetivo:</b> Activar tren inferior y movilidad lumbar.', yt:'https://www.youtube.com/watch?v=ZXwvmRSRRxY' },
+    { id:'wu_sab4', icon:'💪', name:'Flexión de codo dinámica', time:'1×12 reps', svgKey:'elbow_circles', desc:'<b>Cómo:</b> Dobla y extiende los codos rápidamente, como si hicieras curls en el aire. <b>Objetivo:</b> Activar bíceps y codo.', yt:'https://www.youtube.com/watch?v=shcSlZEnNp0' },
+    { id:'wu_sab5', icon:'🏃', name:'Elevación de rodillas alternas', time:'1 min', svgKey:'high_knees', desc:'<b>Cómo:</b> Levanta las rodillas alternando a la altura de la cadera, a ritmo moderado. <b>Objetivo:</b> Activar flexores de cadera y core.', yt:'https://www.youtube.com/watch?v=ZZZoCNMU48U' },
+    { id:'wu_sab6', icon:'🌬️', name:'Respiración profunda', time:'1 min', svgKey:'breathing', desc:'<b>Cómo:</b> Inhala 4 seg por la nariz, exhala 4 seg por la boca. Repite 6–8 veces. <b>Objetivo:</b> Activar sistema nervioso y concentrarse.', yt:'https://www.youtube.com/watch?v=odADwWzHR24' },
+  ],
+};
+
+function renderWarmups(dayKey, containerId) {
+  const wus = WARMUPS[dayKey];
+  const c = document.getElementById(containerId);
+  if (!c || !wus) return;
+  c.innerHTML = wus.map(wu => `
+    <div class="wu-card" id="wucard-${wu.id}">
+      <div class="wu-header">
+        <div class="tick-box" id="wutick-${wu.id}" onclick="toggleWUTick('${wu.id}')"><span class="check">✓</span></div>
+        <span class="wu-icon" style="cursor:pointer" onclick="toggleWU('${wu.id}')">${wu.icon}</span>
+        <div class="wu-info" style="cursor:pointer" onclick="toggleWU('${wu.id}')">
+          <div class="wu-name">${wu.name}</div>
+          <div class="wu-time">${wu.time}</div>
+        </div>
+        <span class="wu-toggle" id="wutoggle-${wu.id}" onclick="toggleWU('${wu.id}')">▼</span>
+      </div>
+      <div class="wu-detail" id="wudetail-${wu.id}">
+        <div class="wu-row">
+          <div class="wu-svg">${WU_SVGS[wu.svgKey] || ''}</div>
+          <div class="wu-text">
+            <p>${wu.desc}</p>
+            <a class="wu-yt" href="${wu.yt}" target="_blank" rel="noopener">▶ Ver en YouTube</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleWUTick(id) {
+  const tick = document.getElementById('wutick-' + id);
+  const card = document.getElementById('wucard-' + id);
+  tick.classList.toggle('done');
+  card.classList.toggle('done-card');
+}
+
+function toggleWU(id) {
+  const d = document.getElementById('wudetail-' + id);
+  const t = document.getElementById('wutoggle-' + id);
+  const open = d.classList.contains('open');
+  d.classList.toggle('open', !open);
+  t.classList.toggle('open', !open);
+}
+
+// INIT
+renderWarmups('lun','wu-lun');
+renderWarmups('mar','wu-mar');
+renderWarmups('jue','wu-jue');
+renderWarmups('sab','wu-sab');
+renderExercises('mar','exlist-mar');
+renderExercises('jue','exlist-jue');
+renderExercises('sab','exlist-sab');
+refreshQuickWeights();
+</script>
+</body>
+</html>
