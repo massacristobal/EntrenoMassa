@@ -1338,7 +1338,6 @@ function renderProgress(){
 // ═══════════════════════════════════════════
 const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxytlx-CmwGdkQv55Xotzp3Nbe9WQ4JDMg_JPFfe_u9X46wygSH-n3zrQ0kcEjgTYcR/exec';
 
-// Map exercise IDs to readable names
 function exName(exId) {
   for (const exs of Object.values(DAYS)) {
     const ex = exs.find(x => x.id === exId);
@@ -1347,17 +1346,42 @@ function exName(exId) {
   return exId;
 }
 
-async function syncToSheets(weekLabel, exId, peso) {
+// Send using iframe trick — avoids CORS issues with Apps Script
+function sendToSheets(rows) {
+  return new Promise((resolve) => {
+    if (!rows.length) { resolve(); return; }
+    // Create hidden iframe to handle redirect
+    const iframeId = 'sheets-iframe-' + Date.now();
+    const iframe = document.createElement('iframe');
+    iframe.name = iframeId;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    // Create form targeting the iframe
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = SHEETS_URL;
+    form.target = iframeId;
+    form.style.display = 'none';
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = JSON.stringify({ rows });
+    form.appendChild(input);
+    document.body.appendChild(form);
+    // Submit
+    form.submit();
+    // Cleanup after 4s
+    setTimeout(() => {
+      try { document.body.removeChild(form); document.body.removeChild(iframe); } catch(e){}
+      resolve();
+    }, 4000);
+  });
+}
+
+function syncToSheets(weekLabel, exId, peso) {
   if (!peso) return;
-  try {
-    const fecha = new Date().toLocaleDateString('es-CL');
-    await fetch(SHEETS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rows: [{ fecha, semana: weekLabel, ejercicio: exName(exId), peso }] })
-    });
-  } catch(e) { console.log('Sheets sync error:', e); }
+  const fecha = new Date().toLocaleDateString('es-CL');
+  sendToSheets([{ fecha, semana: weekLabel, ejercicio: exName(exId), peso }]);
 }
 
 async function syncAllToSheets() {
@@ -1369,15 +1393,7 @@ async function syncAllToSheets() {
   for (const [exId, peso] of Object.entries(saved)) {
     if (peso) rows.push({ fecha, semana: wLabel, ejercicio: exName(exId), peso });
   }
-  if (!rows.length) return;
-  try {
-    await fetch(SHEETS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rows })
-    });
-  } catch(e) { console.log('Sheets sync error:', e); }
+  await sendToSheets(rows);
 }
 function autoSaveWeight(exId) {
   const inp = document.getElementById('quickw-' + exId);
