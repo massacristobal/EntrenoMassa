@@ -1381,7 +1381,9 @@ function sendToSheets(rows) {
 function syncToSheets(weekLabel, exId, peso) {
   if (!peso) return;
   const fecha = new Date().toLocaleDateString('es-CL');
-  sendToSheets([{ fecha, semana: weekLabel, ejercicio: exName(exId), peso }]);
+  const series = getSeriesCount(exId, DAYS[Object.keys(DAYS).find(d => DAYS[d].find(x=>x.id===exId))]?.find(x=>x.id===exId)?.series || 3);
+  const reps = getReps(exId, DAYS[Object.keys(DAYS).find(d => DAYS[d].find(x=>x.id===exId))]?.find(x=>x.id===exId)?.reps || '—');
+  sendToSheets([{ fecha, semana: weekLabel, ejercicio: exName(exId), series, reps, peso }]);
 }
 
 async function syncAllToSheets() {
@@ -1391,7 +1393,16 @@ async function syncAllToSheets() {
   const rows = [];
   const fecha = new Date().toLocaleDateString('es-CL');
   for (const [exId, peso] of Object.entries(saved)) {
-    if (peso) rows.push({ fecha, semana: wLabel, ejercicio: exName(exId), peso });
+    if (!peso) continue;
+    // find exercise default
+    let defSeries = 3, defReps = '—';
+    for (const exs of Object.values(DAYS)) {
+      const ex = exs.find(x => x.id === exId);
+      if (ex) { defSeries = ex.series; defReps = ex.reps; break; }
+    }
+    const series = getSeriesCount(exId, defSeries);
+    const reps = getReps(exId, defReps);
+    rows.push({ fecha, semana: wLabel, ejercicio: exName(exId), series, reps, peso });
   }
   await sendToSheets(rows);
 }
