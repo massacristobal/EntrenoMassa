@@ -178,6 +178,14 @@
   .prog-weights{display:flex;gap:5px;flex-wrap:wrap;}
   .prog-chip{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:.7rem;color:var(--muted);}
   .prog-chip.latest{border-color:var(--accent);color:var(--accent);font-weight:600;}
+  /* EXERCISE PICKER MODAL */
+  #exPickerOverlay{display:none;position:fixed;inset:0;z-index:998;background:rgba(10,11,15,.92);align-items:flex-end;justify-content:center;}
+  #exPickerOverlay.show{display:flex;}
+  .ex-picker-sheet{background:var(--bg);border-top:2px solid var(--accent);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;padding:20px;}
+  .ex-picker-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .ex-picker-header h3{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:2px;color:var(--accent);}
+  .ex-picker-close{background:var(--card);border:1px solid var(--border);color:var(--muted);border-radius:50%;width:30px;height:30px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
   @media(max-width:400px){.diagram-step{width:80px;}.diagram-step svg{width:72px;height:72px;}.wu-row{flex-direction:column;}}
 </style>
 </head>
@@ -209,7 +217,7 @@
 
 <!-- MARTES -->
 <div class="panel" id="panel-mar">
-  <div class="day-header"><span class="day-badge blue">MARTES</span><span style="font-size:.85rem;color:var(--muted)">Potencia + Tren Superior</span></div>
+  <div class="day-header"><span class="day-badge blue">MARTES</span><span style="font-size:.85rem;color:var(--muted)">Fuerza Explosiva + Tren Superior</span></div>
   <div class="section-label">Calentamiento (8 min)</div>
   <div class="warmup-list" id="wu-mar"></div>
   <div class="section-label">Entrenamiento</div>
@@ -226,7 +234,7 @@
 
 <!-- JUEVES -->
 <div class="panel" id="panel-jue">
-  <div class="day-header"><span class="day-badge orange">JUEVES</span><span style="font-size:.85rem;color:var(--muted)">Fuerza Unilateral + Pliometría</span></div>
+  <div class="day-header"><span class="day-badge orange">JUEVES</span><span style="font-size:.85rem;color:var(--muted)">Fuerza Unilateral + Pliometría Pesada</span></div>
   <div class="section-label">Calentamiento (8 min)</div>
   <div class="warmup-list" id="wu-jue"></div>
   <div class="section-label">Entrenamiento</div>
@@ -243,7 +251,7 @@
 
 <!-- SÁBADO -->
 <div class="panel" id="panel-sab">
-  <div class="day-header"><span class="day-badge">SÁBADO</span><span style="font-size:.85rem;color:var(--muted)">Explosividad + Agilidad</span></div>
+  <div class="day-header"><span class="day-badge">SÁBADO</span><span style="font-size:.85rem;color:var(--muted)">Potencia + Agilidad + Circuito</span></div>
   <div class="section-label">Calentamiento (7 min)</div>
   <div class="warmup-list" id="wu-sab"></div>
   <div class="section-label">Entrenamiento</div>
@@ -992,30 +1000,30 @@ const DIAGRAMS = {
 };
 const DAYS = {
   mar:[
-    {id:'mar1',num:1,name:'Press hombro con mancuernas',series:3,reps:'10',restSec:90,tempo:'Explosivo ↑',diagKey:'shoulder_press',yt:'https://www.youtube.com/watch?v=bmy7tIopNt4',cues:['Core activado, no arquear la espalda','Baja lento, sube explosivo','Clave para duelos aéreos y protección del balón']},
+    {id:'mar1',num:1,name:'Press hombro explosivo',series:4,reps:'8',restSec:90,tempo:'Explosivo ↑',diagKey:'shoulder_press',yt:'https://www.youtube.com/watch?v=bmy7tIopNt4',cues:['Sube lo más rápido posible — velocidad es la clave','Core activado, no arquear la espalda','Baja controlado, sube explosivo']},
     {id:'mar2',num:2,name:'Remo con mancuerna',series:4,reps:'10',restSec:90,tempo:'Controlado',diagKey:'row',yt:'https://www.youtube.com/watch?v=PQ1X977ag5E',cues:['Espalda recta durante todo el movimiento','Codo cerca del cuerpo al subir','Fortalece la espalda para duelos']},
-    {id:'mar3',num:3,name:'Flexiones explosivas',series:3,reps:'8',restSec:90,tempo:'Explosivo ↑',diagKey:'pushup',yt:'https://www.youtube.com/watch?v=IODxDxX7oi4',cues:['Sube lo más fuerte posible — despega las manos','Cuerpo recto de cabeza a talones','Trabaja potencia de empuje para cargas']},
-    {id:'mar4',num:4,name:'Paloff press con banda',series:3,reps:'12/lado',restSec:60,tempo:'Controlado',diagKey:'paloff',yt:'https://www.youtube.com/watch?v=AH_QZLm_0-s',cues:['Banda anclada a un lado a altura de pecho','Empuja al frente y mantén 2 seg sin rotar','Core anti-rotación — clave para disparos y duelos']},
-    {id:'mar5',num:5,name:'Curl + press combinado',series:3,reps:'10',restSec:60,tempo:'Fluido',diagKey:'curl_press',yt:'https://www.youtube.com/watch?v=ykJmrZ5v0Oo',cues:['Curl de bíceps + press de hombro en un solo movimiento','Ritmo fluido sin parar entre fases','Trabaja coordinación y resistencia muscular']},
-    {id:'mar6',num:6,name:'Plancha con alcance',series:3,reps:'10/lado',restSec:60,tempo:'Estable',diagKey:'plank_tap',yt:'https://www.youtube.com/watch?v=LEZq7QcKLbk',cues:['En plancha alta, extiende un brazo al frente','Caderas quietas, sin rotar','Anti-rotación + estabilidad de hombro']},
+    {id:'mar3',num:3,name:'Flexiones explosivas',series:4,reps:'6',restSec:90,tempo:'Explosivo ↑',diagKey:'pushup',yt:'https://www.youtube.com/watch?v=IODxDxX7oi4',cues:['6 reps — máxima velocidad en cada una','Descansa si pierdes velocidad — calidad sobre cantidad','Cuerpo recto de cabeza a talones']},
+    {id:'mar4',num:4,name:'Paloff press con banda',series:3,reps:'12/lado',restSec:60,tempo:'Controlado',diagKey:'paloff',yt:'https://www.youtube.com/watch?v=AH_QZLm_0-s',cues:['Banda anclada al costado a altura de pecho','Empuja al frente y mantén 2 seg sin rotar','Core anti-rotación — clave para disparos y duelos']},
+    {id:'mar5',num:5,name:'Dead bug',series:3,reps:'10/lado',restSec:60,tempo:'Lento',diagKey:'plank',yt:'https://www.youtube.com/watch?v=4XLEnwUr1d8',cues:['Espalda baja pegada al suelo — siempre','Baja brazo y pierna opuesta al mismo tiempo muy lento','Exhala al bajar — activa el core profundo']},
+    {id:'mar6',num:6,name:'Chop con banda (diagonal)',series:3,reps:'10/lado',restSec:60,tempo:'Explosivo',diagKey:'paloff',yt:'https://www.youtube.com/watch?v=N_8pA6IFYKU',cues:['Banda arriba y al lado — jala diagonal hacia abajo','Rotación del torso — no solo los brazos','Movimiento explosivo — simula disparo y pase']},
   ],
   jue:[
-    {id:'jue1',num:1,name:'Sentadilla búlgara con mancuernas',series:4,reps:'8/pierna',restSec:120,tempo:'Controlado',diagKey:'bulgarian',yt:'https://www.youtube.com/watch?v=2C-uNgKwPLE',cues:['Pie trasero apoyado en una silla o banco','Rodilla delantera no pasa la punta del pie','El ejercicio más específico para fútbol — todo en una pierna']},
-    {id:'jue2',num:2,name:'Peso muerto a una pierna',series:3,reps:'8/pierna',restSec:90,tempo:'Lento ↓',diagKey:'single_rdl',yt:'https://www.youtube.com/watch?v=2cv28vl59MY',cues:['Pierna de apoyo levemente flexionada','Baja la mancuerna frente a la pierna de apoyo','Trabaja equilibrio y fuerza posterior — clave para fútbol']},
-    {id:'jue3',num:3,name:'Salto al cajón / Broad jump',series:4,reps:'6',restSec:120,tempo:'Máx. explosivo',diagKey:'box_jump',yt:'https://www.youtube.com/watch?v=52lowPDj740',cues:['Amortiza la caída con rodillas flexionadas','Máxima potencia en cada salto — no hagas con fatiga','Baja caminando, nunca saltando hacia atrás']},
-    {id:'jue4',num:4,name:'Zancada lateral con mancuerna',series:3,reps:'10/lado',restSec:90,tempo:'Controlado',diagKey:'lateral_lunge',yt:'https://www.youtube.com/watch?v=gwjgLMeSxws',cues:['Paso amplio al costado, rodilla sobre el pie','Pie opuesto recto en el suelo','Trabaja abductores y aductores — cambios de dirección']},
-    {id:'jue5',num:5,name:'Puente glúteo a una pierna',series:3,reps:'12/pierna',restSec:60,tempo:'Pausa 1seg ↑',diagKey:'single_glute',yt:'https://www.youtube.com/watch?v=wPM8icPu6H8',cues:['Una pierna extendida al aire','Empuja con el talón de apoyo','Activa glúteo mayor — potencia en el disparo']},
-    {id:'jue6',num:6,name:'Elevación de talones unilateral',series:3,reps:'15/pierna',restSec:60,tempo:'Lento',diagKey:'calf_raise',yt:'https://www.youtube.com/watch?v=gwLzBJYoWlI',cues:['Una pierna a la vez apoyado en la pared','Rango completo — baja bien el talón','Previene lesiones de gemelo frecuentes en fútbol']},
-    {id:'jue7',num:7,name:'Plancha lateral con elevación de cadera',series:3,reps:'10/lado',restSec:60,tempo:'Controlado',diagKey:'side_plank',yt:'https://www.youtube.com/watch?v=_rdfjFSFKcM',cues:['Plancha lateral base, luego baja y sube la cadera','Mantén el cuerpo alineado','Fortalece oblicuos — estabilidad lateral en carrera']},
+    {id:'jue1',num:1,name:'Sentadilla búlgara con mancuernas',series:4,reps:'6/pierna',restSec:120,tempo:'Controlado',diagKey:'bulgarian',yt:'https://www.youtube.com/watch?v=2C-uNgKwPLE',cues:['6 reps pesadas — fuerza máxima','Pie trasero apoyado en silla o banco','Rodilla delantera no sobrepasa el pie']},
+    {id:'jue2',num:2,name:'Peso muerto a una pierna',series:3,reps:'8/pierna',restSec:90,tempo:'Lento ↓',diagKey:'single_rdl',yt:'https://www.youtube.com/watch?v=2cv28vl59MY',cues:['Pierna de apoyo levemente flexionada','Baja la mancuerna lento — siente el isquio','Equilibrio total — clave para el fútbol']},
+    {id:'jue3',num:3,name:'Broad jump (salto horizontal)',series:4,reps:'5',restSec:120,tempo:'Máx. explosivo',diagKey:'box_jump',yt:'https://www.youtube.com/watch?v=bBKHFOTONkk',cues:['Salta lo más lejos posible horizontalmente','Amortiza con rodillas flexionadas al caer','Más específico que el salto vertical para fútbol']},
+    {id:'jue4',num:4,name:'Salto a una pierna',series:3,reps:'5/pierna',restSec:120,tempo:'Máx. explosivo',diagKey:'box_jump',yt:'https://www.youtube.com/watch?v=3MK-BRQsCgI',cues:['Impulso con una sola pierna — aterriza en la misma','Rodilla al frente para ganar altura','Clave para arranques y cambios de dirección']},
+    {id:'jue5',num:5,name:'Zancada lateral con mancuerna',series:3,reps:'10/lado',restSec:90,tempo:'Controlado',diagKey:'lateral_lunge',yt:'https://www.youtube.com/watch?v=gwjgLMeSxws',cues:['Paso amplio al costado — rodilla sobre el pie','Pie opuesto recto en el suelo','Trabaja abductores — cambios de dirección']},
+    {id:'jue6',num:6,name:'Curl nórdico con banda',series:3,reps:'8',restSec:90,tempo:'Lento ↓',diagKey:'single_rdl',yt:'https://www.youtube.com/watch?v=sOey6MuWNSo',cues:['De rodillas, banda en los pies o ayuda de un compañero','Baja el torso MUY lento resistiendo con isquios','El ejercicio más efectivo para prevenir desgarros']},
+    {id:'jue7',num:7,name:'Bird dog',series:3,reps:'10/lado',restSec:60,tempo:'Lento',diagKey:'plank',yt:'https://www.youtube.com/watch?v=wiFNA3sqjCA',cues:['En 4 apoyos — extiende brazo y pierna opuesta','Espalda plana — no rotar las caderas','Core estabilidad profunda — base de todo movimiento']},
   ],
   sab:[
-    {id:'sab1',num:1,name:'Skater jumps',series:4,reps:'10/lado',restSec:60,tempo:'Explosivo',diagKey:'skater',yt:'https://www.youtube.com/watch?v=8HNaKlXHbgE',cues:['Salto lateral amplio — aterriza en una pierna','Dobla la rodilla al aterrizar para amortiguar','Imita los cambios de dirección del mediocampista']},
-    {id:'sab2',num:2,name:'Sentadilla jump',series:4,reps:'8',restSec:90,tempo:'Máx. explosivo',diagKey:'squat_jump',yt:'https://www.youtube.com/watch?v=CVaEhXotL7M',cues:['Baja a 90° y explota hacia arriba','Aterriza suave con rodillas flexionadas','Potencia vertical — saltos en cabeceo']},
-    {id:'sab3',num:3,name:'Remo con banda',series:3,reps:'12',restSec:60,tempo:'Controlado',diagKey:'band_row',yt:'https://www.youtube.com/watch?v=tLnlWj7LQ34',cues:['Codos cerca del cuerpo al jalar','Aprieta omóplatos al llegar','Mantiene equilibrio muscular con el tren superior']},
-    {id:'sab4',num:4,name:'Swing con mancuerna',series:3,reps:'12',restSec:60,tempo:'Potente',diagKey:'swing',yt:'https://www.youtube.com/watch?v=YSxHifyI6s8',cues:['Movimiento de cadera, no de brazos','Glúteos y core al frente explosivo','Potencia de cadera transferible al disparo']},
-    {id:'sab5',num:5,name:'Mountain climbers',series:3,reps:'20/pierna',restSec:45,tempo:'Explosivo',diagKey:'mountain_climber',yt:'https://www.youtube.com/watch?v=nmwgirgXLYM',cues:['Caderas abajo, cuerpo recto','Ritmo máximo — simula esfuerzo de partido','Cardio + core simultáneo']},
-    {id:'sab6',num:6,name:'Bicicleta abdominal',series:3,reps:'20',restSec:45,tempo:'Controlado',diagKey:'bicycle',yt:'https://www.youtube.com/watch?v=9FGilxCbdz8',cues:['Codo toca rodilla opuesta real','Movimiento lento y controlado','Core rotacional — clave para giros en el juego']},
-    {id:'sab7',num:7,name:'Burpee lateral',series:3,reps:'8',restSec:60,tempo:'Máx. intensidad',diagKey:'lateral_burpee',yt:'https://www.youtube.com/watch?v=RpClBT1PFsM',cues:['Igual que burpee normal pero el salto es lateral','Combina explosividad y cambio de dirección','Simula esfuerzo máximo de partido']},
+    {id:'sab1',num:1,name:'Skater jumps',series:4,reps:'8/lado',restSec:60,tempo:'Explosivo',diagKey:'skater',yt:'https://www.youtube.com/watch?v=8HNaKlXHbgE',cues:['Salto lateral amplio — aterriza en una pierna','Absorbe el impacto con rodilla flexionada','Imita cambios de dirección del mediocampista']},
+    {id:'sab2',num:2,name:'Tuck jump',series:4,reps:'6',restSec:90,tempo:'Máx. explosivo',diagKey:'squat_jump',yt:'https://www.youtube.com/watch?v=JbPaFcPV9c0',cues:['Salta y lleva las rodillas al pecho en el aire','Aterriza suave — amortiza bien','Más potente que el squat jump — activa más fibras rápidas']},
+    {id:'sab3',num:3,name:'Bounding (saltos alternos)',series:3,reps:'8 pasos',restSec:90,tempo:'Explosivo',diagKey:'skater',yt:'https://www.youtube.com/watch?v=DK7CqCzSHD4',cues:['Zancadas largas explosivas alternando piernas','Empuja fuerte el suelo con cada paso','Entrena la potencia de sprint — muy específico para fútbol']},
+    {id:'sab4',num:4,name:'Swing con mancuerna',series:3,reps:'12',restSec:60,tempo:'Potente',diagKey:'swing',yt:'https://www.youtube.com/watch?v=YSxHifyI6s8',cues:['Movimiento de cadera, no de brazos','Explota con los glúteos al frente','Potencia de cadera transferible al disparo']},
+    {id:'sab5',num:5,name:'Burpee lateral',series:3,reps:'6',restSec:60,tempo:'Máx. intensidad',diagKey:'lateral_burpee',yt:'https://www.youtube.com/watch?v=RpClBT1PFsM',cues:['Plancha — levántate — salta al costado','Combina explosividad y cambio de dirección','Simula esfuerzo máximo de partido']},
+    {id:'sab6',num:6,name:'Chop con banda (diagonal)',series:3,reps:'10/lado',restSec:45,tempo:'Explosivo',diagKey:'paloff',yt:'https://www.youtube.com/watch?v=N_8pA6IFYKU',cues:['Jala diagonal desde arriba hacia abajo','Rotación explosiva del torso','Simula el gesto del pase y disparo']},
+    {id:'sab7',num:7,name:'Mountain climbers',series:3,reps:'20/pierna',restSec:45,tempo:'Explosivo',diagKey:'mountain_climber',yt:'https://www.youtube.com/watch?v=nmwgirgXLYM',cues:['Caderas abajo — cuerpo recto','Ritmo máximo para simular esfuerzo de partido','Cardio + core simultáneo']},
   ]
 };
 
@@ -1107,6 +1115,266 @@ function toggleSerie(exId, idx, total) {
 }
 
 // ═══════════════════════════════════════════
+// CUSTOM EXERCISE NAME OVERRIDE — pick from list
+// ═══════════════════════════════════════════
+let exCustomNames = {};
+try { exCustomNames = JSON.parse(localStorage.getItem('rutina_custom_names') || '{}'); } catch(e){}
+
+function getExName(exId, defaultName) {
+  return exCustomNames[exId] || defaultName;
+}
+
+// Alternative exercise bank — curated for football players, grouped by category
+const EXERCISE_ALTERNATIVES = {
+  potencia_piernas: [
+    'Sentadilla búlgara con mancuernas',
+    'Sentadilla con mancuernas',
+    'Sentadilla jump',
+    'Sentadilla frontal con mancuernas',
+    'Sentadilla sumo con mancuerna',
+    'Pistol squat asistido',
+    'Step-up con mancuernas',
+    'Step-up explosivo',
+    'Zancada alternada con mancuernas',
+    'Zancada lateral con mancuerna',
+    'Zancada reversa con mancuerna',
+    'Zancada con salto',
+    'Zancada caminando con mancuernas',
+  ],
+  fuerza_posterior: [
+    'Peso muerto rumano con mancuernas',
+    'Peso muerto a una pierna',
+    'Peso muerto sumo con mancuerna',
+    'Curl de isquiotibiales con banda',
+    'Buenos días con mancuerna',
+    'Hip thrust con mancuerna',
+    'Puente glúteo con banda',
+    'Puente glúteo a una pierna',
+    'Patada de glúteo con banda',
+    'Abducción de cadera con banda',
+    'Monster walk con banda',
+    'Clamshell con banda',
+  ],
+  pliometria_explosividad: [
+    'Salto al cajón',
+    'Broad jump (salto horizontal)',
+    'Skater jumps',
+    'Sentadilla jump',
+    'Salto a una pierna',
+    'Salto lateral con una pierna',
+    'Salto con rodillas al pecho',
+    'Drop jump',
+    'Salto de tijera explosivo',
+    'Bounding (saltos alternos largos)',
+    'Tuck jump',
+    'Salto lateral al cajón',
+  ],
+  agilidad_cambio_direccion: [
+    'Skater jumps',
+    'Shuffle lateral',
+    'Carrera en 8',
+    'Carrera en zigzag',
+    'Burpee lateral',
+    'Carioca lateral',
+    'Deceleration step',
+    'Pivot y arrancada',
+    'Cambio de dirección con banda',
+    'T-drill sin balón',
+    'Ladder drill simulado',
+  ],
+  cardio_resistencia: [
+    'Mountain climbers',
+    'Burpees',
+    'Burpee lateral',
+    'Jumping jacks',
+    'Sprint en el lugar',
+    'High knees (rodillas al pecho)',
+    'Skipping alto',
+    'Bicicleta estática intervalos',
+    'Elíptica intervalos',
+    'Sombra de fútbol (movimientos sin balón)',
+    'Circuito AMRAP 5 min',
+  ],
+  core_estabilidad: [
+    'Plancha',
+    'Plancha lateral',
+    'Plancha con alcance',
+    'Plancha con elevación de pierna',
+    'Paloff press con banda',
+    'Paloff press de rodillas',
+    'Russian twist con mancuerna',
+    'Bicicleta abdominal',
+    'Elevación de piernas tumbado',
+    'Dead bug',
+    'Bird dog',
+    'Hollow hold',
+    'Roll-out con mancuerna',
+    'Plancha RKC',
+  ],
+  core_rotacional: [
+    'Russian twist con mancuerna',
+    'Bicicleta abdominal',
+    'Paloff press con banda',
+    'Chop con banda (corte diagonal)',
+    'Lift con banda (diagonal hacia arriba)',
+    'Rotación de torso con banda',
+    'Lanzamiento de medicine ball al muro',
+    'Swing con mancuerna',
+    'Rotación de cadera de pie',
+  ],
+  tren_superior_funcional: [
+    'Press hombro con mancuernas',
+    'Press Arnold',
+    'Elevaciones laterales',
+    'Elevaciones frontales',
+    'Remo con mancuerna',
+    'Remo con banda',
+    'Face pull con banda',
+    'Curl + press combinado',
+    'Curl de bíceps con banda',
+    'Extensión de tríceps con banda',
+    'Flexiones',
+    'Flexiones explosivas',
+    'Flexiones con palmada',
+    'Flexiones en diamante',
+    'Press de pecho con mancuernas',
+    'Aperturas con mancuernas',
+    'Pull-over con mancuerna',
+  ],
+  movilidad_prevencion: [
+    'Elevación de talones unilateral',
+    'Elevación de talones bilateral',
+    'Rotación externa de cadera con banda',
+    'Abducción de cadera con banda',
+    'Monster walk con banda',
+    'Clamshell con banda',
+    'Hip circle de pie',
+    'Sentadilla con pausa en el fondo',
+    'Estiramiento de flexor de cadera en zancada',
+    'Apertura lateral de pierna (leg swing)',
+    'Curl nórdico con banda',
+    'Fortalecimiento de tobillo con banda',
+  ],
+  especifico_mediocampista: [
+    'Skater jumps',
+    'Sentadilla búlgara con mancuernas',
+    'Peso muerto a una pierna',
+    'Paloff press con banda',
+    'Zancada lateral con mancuerna',
+    'Salto al cajón',
+    'Broad jump (salto horizontal)',
+    'Swing con mancuerna',
+    'Burpee lateral',
+    'Dead bug',
+    'Bird dog',
+    'Step-up explosivo',
+    'Bounding (saltos alternos largos)',
+    'Chop con banda (corte diagonal)',
+    'Lanzamiento de medicine ball al muro',
+  ],
+};
+
+const CATEGORY_LABELS = {
+  potencia_piernas:          '🦵 Potencia de piernas',
+  fuerza_posterior:          '🍑 Fuerza posterior / Glúteos',
+  pliometria_explosividad:   '🚀 Pliometría y explosividad',
+  agilidad_cambio_direccion: '⚡ Agilidad y cambio de dirección',
+  cardio_resistencia:        '❤️ Cardio y resistencia',
+  core_estabilidad:          '🌀 Core — estabilidad',
+  core_rotacional:           '🔄 Core — rotacional',
+  tren_superior_funcional:   '💪 Tren superior funcional',
+  movilidad_prevencion:      '🧘 Movilidad y prevención',
+  especifico_mediocampista:  '⭐ Específico mediocampista',
+};
+
+let editingExId = null, editingDefaultName = null;
+
+function openExerciseEdit(e, exId, defaultName) {
+  e.stopPropagation();
+  editingExId = exId;
+  editingDefaultName = defaultName;
+  renderExercisePicker();
+  document.getElementById('exPickerOverlay').classList.add('show');
+}
+
+function closeExercisePicker() {
+  document.getElementById('exPickerOverlay').classList.remove('show');
+}
+
+function renderExercisePicker(filter='') {
+  const current = getExName(editingExId, editingDefaultName);
+  const q = (filter||'').toLowerCase().trim();
+  let html = `
+    <div style="font-size:.75rem;color:var(--muted);margin-bottom:10px;">
+      Actual: <b style="color:var(--accent)">${current}</b>
+    </div>
+    <input type="text" id="exPickerSearch" placeholder="🔍 Buscar ejercicio..."
+      oninput="renderExercisePicker(this.value)"
+      value="${(filter||'').replace(/"/g,'&quot;')}"
+      style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-size:.85rem;font-family:'DM Sans',sans-serif;margin-bottom:14px;outline:none;">`;
+  let hasResults = false;
+  for (const [cat, list] of Object.entries(EXERCISE_ALTERNATIVES)) {
+    const filtered = q ? list.filter(n => n.toLowerCase().includes(q)) : list;
+    if (!filtered.length) continue;
+    hasResults = true;
+    html += `<div class="diagram-label" style="margin-top:12px">${CATEGORY_LABELS[cat]}</div>`;
+    html += `<div style="display:flex;flex-direction:column;gap:5px;">`;
+    filtered.forEach(name => {
+      const isCurrent = name === current;
+      html += `<button class="cal-pick-btn" style="${isCurrent?'border-color:var(--accent);color:var(--accent);':''}" onclick="pickExercise('${name.replace(/'/g,"\\'")}')">
+        ${isCurrent?'✓ ':''}${name}
+      </button>`;
+    });
+    html += `</div>`;
+  }
+  if (!hasResults) html += `<div style="text-align:center;padding:20px;color:var(--muted);font-size:.82rem;">Sin resultados para "<b>${filter}</b>"</div>`;
+  document.getElementById('exPickerList').innerHTML = html;
+}
+
+function pickExercise(name) {
+  if (name === editingDefaultName) delete exCustomNames[editingExId];
+  else exCustomNames[editingExId] = name;
+  try { localStorage.setItem('rutina_custom_names', JSON.stringify(exCustomNames)); } catch(e){}
+  const nameEl = document.getElementById('exname-' + editingExId);
+  const badge = document.getElementById('exbadge-' + editingExId);
+  if (nameEl) nameEl.textContent = getExName(editingExId, editingDefaultName);
+  if (badge) badge.style.display = exCustomNames[editingExId] ? 'inline' : 'none';
+  const aiBtn = document.getElementById('aibtn-' + editingExId);
+  if (aiBtn) aiBtn.setAttribute('onclick', `askAI(event,'${editingExId}','${getExName(editingExId, editingDefaultName).replace(/'/g,"\\'")}')`);
+  closeExercisePicker();
+  // re-render the exercise card's edit button area (badge + reset button)
+  const card = document.getElementById('exheader-' + editingExId);
+  if (card) {
+    const isCustom = !!exCustomNames[editingExId];
+    const resetBtn = card.querySelector('.reset-name-btn');
+    const editRow = card.querySelector('.edit-name-row');
+    if (editRow) {
+      editRow.innerHTML = `<button class="timer-btn" style="flex:1;border-color:var(--accent3);color:var(--accent3);" onclick="openExerciseEdit(event,'${editingExId}','${editingDefaultName.replace(/'/g,"\\'")}')">🔄 Cambiar ejercicio</button>` +
+        (isCustom ? `<button class="timer-btn" style="flex:0;" onclick="resetExerciseName(event,'${editingExId}','${editingDefaultName.replace(/'/g,"\\'")}')">↺ Original</button>` : '');
+    }
+    const tipBox = card.querySelector('.custom-tip-box');
+    if (tipBox) tipBox.style.display = isCustom ? 'block' : 'none';
+  }
+}
+
+function resetExerciseName(e, exId, defaultName) {
+  e.stopPropagation();
+  delete exCustomNames[exId];
+  try { localStorage.setItem('rutina_custom_names', JSON.stringify(exCustomNames)); } catch(e){}
+  const nameEl = document.getElementById('exname-' + exId);
+  const badge = document.getElementById('exbadge-' + exId);
+  if (nameEl) nameEl.textContent = defaultName;
+  if (badge) badge.style.display = 'none';
+  const card = document.getElementById('exheader-' + exId);
+  if (card) {
+    const editRow = card.querySelector('.edit-name-row');
+    if (editRow) editRow.innerHTML = `<button class="timer-btn" style="flex:1;border-color:var(--accent3);color:var(--accent3);" onclick="openExerciseEdit(event,'${exId}','${defaultName.replace(/'/g,"\\'")}')">🔄 Cambiar ejercicio</button>`;
+    const tipBox = card.querySelector('.custom-tip-box');
+    if (tipBox) tipBox.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════════
 function renderExercises(dayKey, containerId) {
@@ -1120,22 +1388,30 @@ function renderExercises(dayKey, containerId) {
       <div class="diagram-step">${s.svg}<div class="step-label">${s.label}</div></div>`
     ).join('') : '';
     const defSeries = ex.series;
+    const displayName = getExName(ex.id, ex.name);
+    const isCustom = !!exCustomNames[ex.id];
     return `<div class="ex-card" id="exheader-${ex.id}">
       <div class="ex-card-header">
         <div class="tick-box" id="extick-${ex.id}" onclick="event.stopPropagation()"><span class="check">✓</span></div>
         <span class="ex-num" onclick="toggleEx('${ex.id}')">${ex.num}</span>
         <div class="ex-info" onclick="toggleEx('${ex.id}')">
-          <div class="ex-name">${ex.name}</div>
+          <div class="ex-name" id="exname-${ex.id}">${displayName}</div>
           <div class="ex-meta">
             <span class="tag" id="seriestag-${ex.id}">${defSeries} series × ${ex.reps}</span>
             <span class="tag yellow">⏱ ${ex.restSec}s descanso</span>
             <span class="tag blue">${ex.tempo}</span>
+            <span class="tag" id="exbadge-${ex.id}" style="display:${isCustom?'inline':'none'};border-color:var(--accent3);color:var(--accent3);">🔄 personalizado</span>
           </div>
         </div>
         <span class="ex-toggle" id="toggle-${ex.id}" onclick="toggleEx('${ex.id}')">▼</span>
       </div>
       <div class="ex-detail" id="detail-${ex.id}">
         <div class="ex-detail-inner">
+          <div class="edit-name-row" style="display:flex;gap:8px;">
+            <button class="timer-btn" style="flex:1;border-color:var(--accent3);color:var(--accent3);" onclick="openExerciseEdit(event,'${ex.id}','${ex.name.replace(/'/g,"\\'")}')">🔄 Cambiar ejercicio</button>
+            ${isCustom ? `<button class="timer-btn" style="flex:0;" onclick="resetExerciseName(event,'${ex.id}','${ex.name.replace(/'/g,"\\'")}')">↺ Original</button>` : ''}
+          </div>
+          <div class="tip-box custom-tip-box" style="margin-top:10px;display:${isCustom?'block':'none'};">Este ejercicio fue cambiado por ti. El diagrama, video y consejos abajo siguen siendo del ejercicio original (${ex.name}) como referencia de técnica similar.</div>
           ${diag ? `<div class="ex-diagram">
             <div class="diagram-label">${diag.label}</div>
             <div class="diagram-steps">${stepsHTML}</div>
@@ -1173,7 +1449,7 @@ function renderExercises(dayKey, containerId) {
           <div class="ex-buttons">
             <a class="yt-btn" href="${ex.yt}" target="_blank" rel="noopener">▶ Ver en YouTube</a>
             <button class="timer-btn" onclick="launchTimer(event,'${ex.id}')">⏱ Cronómetro</button>
-            <button class="ai-btn" id="aibtn-${ex.id}" onclick="askAI(event,'${ex.id}','${ex.name.replace(/'/g,"\\'")}')">✨ IA</button>
+            <button class="ai-btn" id="aibtn-${ex.id}" onclick="askAI(event,'${ex.id}','${displayName.replace(/'/g,"\\'")}')">✨ IA</button>
           </div>
           <div class="ai-response" id="airesp-${ex.id}"></div>
         </div>
@@ -1310,9 +1586,28 @@ function showTab(id,el){
 // WEIGHT LOG
 // ═══════════════════════════════════════════
 const LOG_EXERCISES={
-  martes:[{id:'mar1',name:'Press hombro',unit:'kg c/mano'},{id:'mar2',name:'Remo mancuerna',unit:'kg c/mano'},{id:'mar3',name:'Flexiones explosivas',unit:'reps'},{id:'mar4',name:'Paloff press banda',unit:'resist.'},{id:'mar5',name:'Curl + press',unit:'kg c/mano'},{id:'mar6',name:'Plancha con alcance',unit:'reps/lado'}],
-  jueves:[{id:'jue1',name:'Sentadilla búlgara',unit:'kg c/mano'},{id:'jue2',name:'Peso muerto 1 pierna',unit:'kg c/mano'},{id:'jue3',name:'Salto al cajón',unit:'reps'},{id:'jue4',name:'Zancada lateral',unit:'kg c/mano'},{id:'jue5',name:'Puente glúteo 1 pierna',unit:'reps/lado'}],
-  sabado:[{id:'sab1',name:'Skater jumps',unit:'reps/lado'},{id:'sab2',name:'Sentadilla jump',unit:'reps'},{id:'sab4',name:'Swing mancuerna',unit:'kg'}]
+  martes:[
+    {id:'mar1',name:'Press hombro explosivo',unit:'kg c/mano'},
+    {id:'mar2',name:'Remo con mancuerna',unit:'kg c/mano'},
+    {id:'mar3',name:'Flexiones explosivas',unit:'reps'},
+    {id:'mar4',name:'Paloff press con banda',unit:'resist.'},
+    {id:'mar5',name:'Dead bug',unit:'reps/lado'},
+    {id:'mar6',name:'Chop con banda',unit:'resist.'},
+  ],
+  jueves:[
+    {id:'jue1',name:'Sentadilla búlgara',unit:'kg c/mano'},
+    {id:'jue2',name:'Peso muerto 1 pierna',unit:'kg c/mano'},
+    {id:'jue3',name:'Broad jump',unit:'reps'},
+    {id:'jue4',name:'Salto 1 pierna',unit:'reps/lado'},
+    {id:'jue5',name:'Zancada lateral',unit:'kg c/mano'},
+    {id:'jue6',name:'Curl nórdico banda',unit:'reps'},
+  ],
+  sabado:[
+    {id:'sab1',name:'Skater jumps',unit:'reps/lado'},
+    {id:'sab2',name:'Tuck jump',unit:'reps'},
+    {id:'sab3',name:'Bounding',unit:'pasos'},
+    {id:'sab4',name:'Swing mancuerna',unit:'kg'},
+  ]
 };
 const WEEKS=['Sem 1','Sem 2','Sem 3','Sem 4','Sem 5','Sem 6','Sem 7','Sem 8'];
 let currentWeek=0,allData={};
@@ -1328,7 +1623,7 @@ function renderLogTable(){
   for(const [day,exs] of Object.entries(LOG_EXERCISES)){
     const label=day==='martes'?'💪 Martes':day==='jueves'?'🦵 Jueves':'🔥 Sábado';
     html+=`<div class="log-day-label">${label}</div><table class="log-table"><thead><tr><th>Ejercicio</th><th>Peso</th></tr></thead><tbody>`;
-    for(const ex of exs){html+=`<tr><td><div style="font-size:.82rem">${ex.name}</div><div style="font-size:.72rem;color:var(--muted)">${ex.unit}</div></td><td><input class="weight-input" id="inp_${ex.id}" type="text" placeholder="—" value="${saved[ex.id]||''}"></td></tr>`;}
+    for(const ex of exs){html+=`<tr><td><div style="font-size:.82rem">${getExName(ex.id,ex.name)}</div><div style="font-size:.72rem;color:var(--muted)">${ex.unit}</div></td><td><input class="weight-input" id="inp_${ex.id}" type="text" placeholder="—" value="${saved[ex.id]||''}"></td></tr>`;}
     html+=`</tbody></table>`;
   }
   document.getElementById('logContent').innerHTML=html;
@@ -1358,7 +1653,7 @@ function renderProgress(){
     const label=day==='martes'?'💪 Martes':day==='jueves'?'🦵 Jueves':'🔥 Sábado';
     html+=`<div class="prog-card"><h4>${label}</h4>`;
     for(const ex of exs){
-      html+=`<div class="prog-ex"><span style="flex:1;font-size:.78rem;min-width:90px">${ex.name}</span><div class="prog-weights">`;
+      html+=`<div class="prog-ex"><span style="flex:1;font-size:.78rem;min-width:90px">${getExName(ex.id,ex.name)}</span><div class="prog-weights">`;
       const withData=Object.keys(allData).map(k=>parseInt(k.split('_')[1])).filter(i=>allData['week_'+i]?.[ex.id]);
       const latest=withData.length?Math.max(...withData):-1;let hasAny=false;
       for(let w=0;w<WEEKS.length;w++){const val=allData['week_'+w]?.[ex.id];if(val){html+=`<span class="prog-chip ${w===latest?'latest':''}">${WEEKS[w]}: ${val}</span>`;hasAny=true;}}
@@ -1378,7 +1673,7 @@ const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxytlx-CmwGdkQv55Xot
 function exName(exId) {
   for (const exs of Object.values(DAYS)) {
     const ex = exs.find(x => x.id === exId);
-    if (ex) return ex.name;
+    if (ex) return getExName(exId, ex.name);
   }
   return exId;
 }
@@ -1997,6 +2292,16 @@ renderCalendar();
   <button class="cal-pick-btn" onclick="calPick('fullbody')">🔥 Full body</button>
   <button class="cal-pick-btn" onclick="calPick('descanso')">😴 Descanso activo</button>
   <button class="cal-pick-btn clear" onclick="calPick('clear')">✕ Borrar</button>
+</div>
+<!-- EXERCISE PICKER MODAL -->
+<div id="exPickerOverlay" onclick="if(event.target===this)closeExercisePicker()">
+  <div class="ex-picker-sheet">
+    <div class="ex-picker-header">
+      <h3>🔄 ELEGIR EJERCICIO</h3>
+      <button class="ex-picker-close" onclick="closeExercisePicker()">✕</button>
+    </div>
+    <div id="exPickerList"></div>
+  </div>
 </div>
 </body>
 </html>
