@@ -392,7 +392,7 @@
     <div class="timer-stat"><div class="val" id="tReps">—</div><div class="lbl">Reps</div></div>
   </div>
   <div class="timer-controls">
-    <button class="tc-btn" onclick="timerSkip()">⏭ Saltar</button>
+    <button class="tc-btn" id="tcSkip" onclick="timerSkip()">✅ Iniciar descanso</button>
     <button class="tc-btn primary" id="tcPlayPause" onclick="timerToggle()">⏸ Pausar</button>
     <button class="tc-btn danger" onclick="timerClose()">✕ Cerrar</button>
   </div>
@@ -1135,6 +1135,13 @@ function renderSeriesBullets(exId, total) {
     extick.classList.toggle('done', allDone);
     header.classList.toggle('done-card', allDone);
   }
+  // update session progress bar for this exercise's day
+  for (const [dayKey, exs] of Object.entries(DAYS)) {
+    if (exs.find(x => x.id === exId)) {
+      setTimeout(() => updateSessionProgress(dayKey), 50);
+      break;
+    }
+  }
 }
 
 function toggleSerie(exId, idx, total) {
@@ -1574,36 +1581,58 @@ function updateTimerUI(){
   const s=timerState;
   const badge=document.getElementById('timerTypeBadge');
   const ring=document.getElementById('ringFill');
+  const skipBtn=document.getElementById('tcSkip');
   document.getElementById('timerExName').textContent=s.ex.name;
   document.getElementById('tSerie').textContent=s.currentSerie;
   document.getElementById('tTotal').textContent=s.totalSeries;
-  document.getElementById('tReps').textContent=s.ex.reps;
+  document.getElementById('tReps').textContent=getReps(s.ex.id, s.ex.reps);
   if(s.phase==='work'){
     badge.textContent=`SERIE ${s.currentSerie}`;badge.className='timer-type-badge work';
     ring.classList.remove('rest-color');
     document.getElementById('timerDigits').textContent=fmt(s.workSec);
     document.getElementById('timerLabel').textContent='EN CURSO';
     ring.style.strokeDashoffset=CIRC-Math.min(s.workSec/120,1)*CIRC;
-    document.getElementById('timerNextLabel').textContent=`Siguiente: descanso de ${s.restSec} seg`;
-  }else{
+    document.getElementById('timerNextLabel').textContent=`Al terminar toca "Iniciar descanso" ↑`;
+    if(skipBtn) skipBtn.textContent='✅ Iniciar descanso';
+  } else {
     badge.textContent='DESCANSO';badge.className='timer-type-badge rest-phase';
     ring.classList.add('rest-color');
     document.getElementById('timerDigits').textContent=fmt(s.restRemaining);
     document.getElementById('timerLabel').textContent='DESCANSANDO';
     ring.style.strokeDashoffset=CIRC-(s.restRemaining/s.restSec)*CIRC;
-    document.getElementById('timerNextLabel').textContent=s.currentSerie<s.totalSeries?`Siguiente: Serie ${s.currentSerie+1} de ${s.totalSeries}`:'Última serie';
+    const nextLabel = s.currentSerie<=s.totalSeries
+      ? `Serie ${s.currentSerie} de ${s.totalSeries} comienza al terminar`
+      : 'Última serie completada';
+    document.getElementById('timerNextLabel').textContent=nextLabel;
+    if(skipBtn) skipBtn.textContent='⏭ Saltar descanso';
   }
   document.getElementById('tcPlayPause').textContent=s.running?'⏸ Pausar':'▶ Reanudar';
 }
-function fmt(sec){return Math.floor(sec/60)+':'+(sec%60).toString().padStart(2,'0');}
-function timerToggle(){if(!timerState)return;timerState.running=!timerState.running;document.getElementById('tcPlayPause').textContent=timerState.running?'⏸ Pausar':'▶ Reanudar';}
+
 function timerSkip(){
   if(!timerState)return;
-  if(timerState.phase==='work'){timerState.phase='rest';timerState.restRemaining=timerState.restSec;}
-  else{timerState.currentSerie++;if(timerState.currentSerie>timerState.totalSeries){timerClose();return;}timerState.phase='work';timerState.workSec=0;}
+  if(timerState.phase==='work'){
+    // user finished the serie — go to rest and mark serie done
+    const exId = timerState.ex.id;
+    if(!exSeriesDone[exId]) exSeriesDone[exId] = new Set();
+    exSeriesDone[exId].add(timerState.currentSerie - 1);
+    renderSeriesBullets(exId, timerState.totalSeries);
+    timerState.phase='rest';
+    timerState.restRemaining=timerState.restSec;
+    playBeep(440, 0.1);
+    if(navigator.vibrate) navigator.vibrate(80);
+  } else {
+    // skip rest — go straight to next serie
+    timerState.currentSerie++;
+    if(timerState.currentSerie>timerState.totalSeries){timerClose();return;}
+    timerState.phase='work';
+    timerState.workSec=0;
+  }
   updateTimerUI();
 }
 function timerClose(){clearInterval(timerInterval);timerState=null;document.getElementById('timerOverlay').classList.remove('show');}
+function fmt(sec){return Math.floor(sec/60)+':'+(sec%60).toString().padStart(2,'0');}
+function timerToggle(){if(!timerState)return;timerState.running=!timerState.running;document.getElementById('tcPlayPause').textContent=timerState.running?'⏸ Pausar':'▶ Reanudar';}
 
 // ═══════════════════════════════════════════
 // AI EXPLANATION
@@ -2380,19 +2409,6 @@ function markSessionInCalendar(key, calType, dayKey, isAuto) {
     toast.textContent = (isAuto ? '🎉 ¡Sesión completada! ' : '🏁 ') + (typeLabels[calType] || calType) + ' guardado en el calendario';
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 3500);
-  }
-}
-
-// Hook into renderSeriesBullets to update progress when series are marked
-const _origRenderBullets = renderSeriesBullets;
-function renderSeriesBullets(exId, total) {
-  _origRenderBullets(exId, total);
-  // find which day this exercise belongs to
-  for (const [dayKey, exs] of Object.entries(DAYS)) {
-    if (exs.find(x => x.id === exId)) {
-      setTimeout(() => updateSessionProgress(dayKey), 50);
-      break;
-    }
   }
 }
 
