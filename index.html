@@ -1520,20 +1520,19 @@ function launchTimer(e,exId){
 }
 function tickTimer(){
   if(!timerState||!timerState.running)return;
-  if(timerState.phase==='work'){timerState.workSec++;}
-  else{
+  if(timerState.phase==='work'){
+    timerState.workSec++;
+  } else {
     timerState.restRemaining--;
     if(timerState.restRemaining<=0){
-      // auto-mark the completed serie bullet
+      // mark completed serie bullet
       const exId = timerState.ex.id;
       if(!exSeriesDone[exId]) exSeriesDone[exId] = new Set();
       exSeriesDone[exId].add(timerState.currentSerie - 1);
       renderSeriesBullets(exId, timerState.totalSeries);
       timerState.currentSerie++;
-      if(timerState.currentSerie>timerState.totalSeries){
-        // mark last serie done
-        const exId = timerState.ex.id;
-        if(!exSeriesDone[exId]) exSeriesDone[exId] = new Set();
+      if(timerState.currentSerie > timerState.totalSeries){
+        // all series done
         exSeriesDone[exId].add(timerState.totalSeries - 1);
         renderSeriesBullets(exId, timerState.totalSeries);
         clearInterval(timerInterval);
@@ -1541,12 +1540,35 @@ function tickTimer(){
         document.getElementById('timerLabel').textContent='¡COMPLETADO!';
         document.getElementById('timerNextLabel').textContent='🎉 Todas las series terminadas';
         document.getElementById('ringFill').style.strokeDashoffset=CIRC;
+        playBeep(880, 0.3); playBeep(1100, 0.3, 0.3);
         return;
       }
-      timerState.phase='work';timerState.workSec=0;
+      // advance to next work phase
+      timerState.phase='work';
+      timerState.workSec=0;
+      timerState.restRemaining=timerState.restSec;
+      // beep + vibrate to notify rest is over
+      playBeep(660, 0.15); playBeep(880, 0.15, 0.18);
+      if(navigator.vibrate) navigator.vibrate([100,50,100]);
     }
   }
   updateTimerUI();
+}
+
+// Beep helper using Web Audio API
+function playBeep(freq, duration, delay=0) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+    osc.start(ctx.currentTime + delay);
+    osc.stop(ctx.currentTime + delay + duration + 0.05);
+  } catch(e){}
 }
 function updateTimerUI(){
   const s=timerState;
