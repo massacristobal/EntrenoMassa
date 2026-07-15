@@ -2558,7 +2558,11 @@ function launchTimerById(exId) {
 // ═══════════════════════════════════════════
 const SUPA_URL = 'https://hlmmwiwjtfqvfodkauxd.supabase.co';
 const SUPA_KEY = 'sb_publishable_fcGziq2RG3uQPBU9bGPZRQ_O5YQIR9X';
-const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
+  auth: {
+    redirectTo: 'https://massacristobal.github.io/EntrenoMassa/'
+  }
+});
 
 let currentUser = null;
 
@@ -2602,7 +2606,7 @@ async function submitAuth() {
 async function loginGoogle() {
   await supa.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.href }
+    options: { redirectTo: 'https://massacristobal.github.io/EntrenoMassa/' }
   });
 }
 
