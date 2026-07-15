@@ -5,8 +5,45 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mi Rutina Semanal</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{--bg:#0e0f13;--surface:#16181f;--card:#1e2029;--border:#2a2d3a;--accent:#e8ff47;--accent2:#47c8ff;--accent3:#ff6b47;--text:#f0f0f0;--muted:#7a7d8a;--green:#4cff91;}
+
+  /* AUTH SCREEN */
+  #authScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;}
+  #authScreen.hidden{display:none;}
+  .auth-logo{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;letter-spacing:4px;color:var(--accent);margin-bottom:4px;}
+  .auth-sub{font-size:.82rem;color:var(--muted);margin-bottom:40px;letter-spacing:1px;}
+  .auth-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 24px;width:100%;max-width:380px;}
+  .auth-tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--surface);border-radius:8px;padding:4px;}
+  .auth-tab{flex:1;text-align:center;padding:8px;border-radius:6px;cursor:pointer;font-size:.82rem;font-weight:600;color:var(--muted);transition:all .2s;font-family:'DM Sans',sans-serif;border:none;background:none;}
+  .auth-tab.active{background:var(--accent);color:#000;}
+  .auth-field{margin-bottom:14px;}
+  .auth-field label{display:block;font-size:.72rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+  .auth-field input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:11px 14px;font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;}
+  .auth-field input:focus{border-color:var(--accent);}
+  .auth-submit{width:100%;background:var(--accent);color:#000;border:none;border-radius:10px;padding:13px;font-size:.92rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;transition:opacity .2s;}
+  .auth-submit:hover{opacity:.85;}
+  .auth-divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted);font-size:.75rem;}
+  .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+  .google-btn{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text);display:flex;align-items:center;justify-content:center;gap:10px;transition:border-color .2s;}
+  .google-btn:hover{border-color:var(--accent);}
+  .auth-error{background:rgba(255,107,71,.15);border:1px solid var(--accent3);border-radius:8px;padding:10px 12px;font-size:.78rem;color:var(--accent3);margin-top:12px;display:none;}
+  .auth-error.show{display:block;}
+  .auth-loading{text-align:center;color:var(--muted);font-size:.82rem;margin-top:12px;display:none;}
+
+  /* USER HEADER */
+  .user-bar{display:flex;align-items:center;gap:8px;margin-top:4px;}
+  .user-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#000;font-weight:700;font-size:.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .user-name{font-size:.75rem;color:var(--muted);flex:1;}
+  .logout-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 10px;font-size:.7rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+  .logout-btn:hover{border-color:var(--accent3);color:var(--accent3);}
+
+  /* SYNC INDICATOR */
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-left:6px;}
+  .sync-dot.syncing{background:var(--accent);animation:pulse .8s infinite;}
+  .sync-dot.error{background:var(--accent3);}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;padding:0 0 80px;}
   header{background:linear-gradient(135deg,#0e0f13,#1a1c28);border-bottom:2px solid var(--accent);padding:22px 24px 16px;position:sticky;top:0;z-index:100;}
@@ -202,9 +239,51 @@
 </style>
 </head>
 <body>
+<!-- AUTH SCREEN -->
+<div id="authScreen">
+  <div class="auth-logo">⚽ MI RUTINA</div>
+  <div class="auth-sub">FÚTBOL · FUERZA · PROGRESO</div>
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Ingresar</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Registrarse</button>
+    </div>
+    <div id="authForm">
+      <div class="auth-field" id="nameField" style="display:none">
+        <label>Nombre</label>
+        <input type="text" id="authName" placeholder="Tu nombre o apodo">
+      </div>
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="authEmail" placeholder="tu@email.com">
+      </div>
+      <div class="auth-field">
+        <label>Contraseña</label>
+        <input type="password" id="authPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')submitAuth()">
+      </div>
+      <button class="auth-submit" onclick="submitAuth()" id="authSubmitBtn">Ingresar</button>
+      <div class="auth-divider">o</div>
+      <button class="google-btn" onclick="loginGoogle()">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continuar con Google
+      </button>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-loading" id="authLoading">Cargando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" style="display:none">
+
 <header>
   <h1>MI RUTINA SEMANAL</h1>
-  <p>Fuerza · Fútbol · Condición física</p>
+  <div class="user-bar">
+    <div class="user-avatar" id="userAvatar">?</div>
+    <span class="user-name" id="userName">—</span>
+    <span class="sync-dot" id="syncDot" title="Sincronizado"></span>
+    <button class="logout-btn" onclick="logout()">Salir</button>
+  </div>
 </header>
 <div class="tabs">
   <button class="tab active" onclick="showTab('lun',this)">⚽ LUN</button>
@@ -216,6 +295,7 @@
   <button class="tab" onclick="showTab('dom',this)">🌿 DOM</button>
   <button class="tab" onclick="showTab('pesos',this)">📊 PESOS</button>
   <button class="tab" onclick="showTab('cal',this)">📅 CALENDARIO</button>
+  <button class="tab" onclick="showTab('progreso',this)">📈 PROGRESO</button>
 </div>
 <div class="content">
 
@@ -339,7 +419,13 @@
   <div id="calStreak" style="margin-top:12px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;"></div>
 </div>
 
-<!-- CSS for calendar (injected inline) -->
+<!-- PROGRESO -->
+<div class="panel" id="panel-progreso">
+  <div class="day-header"><span class="day-badge" style="background:var(--accent2)">PROGRESO</span><span style="font-size:.85rem;color:var(--muted)">Mi evolución</span></div>
+  <div id="panel-progreso-content">
+    <div style="text-align:center;padding:40px;color:var(--muted)">Cargando...</div>
+  </div>
+</div>
 <style>
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;}
   .cal-day-label{text-align:center;font-size:.65rem;color:var(--muted);font-weight:700;letter-spacing:1px;padding:4px 0;text-transform:uppercase;}
@@ -1539,15 +1625,30 @@ function tickTimer(){
       renderSeriesBullets(exId, timerState.totalSeries);
       timerState.currentSerie++;
       if(timerState.currentSerie > timerState.totalSeries){
-        // all series done
+        // all series done — mark complete and auto-launch next exercise after 2s
         exSeriesDone[exId].add(timerState.totalSeries - 1);
         renderSeriesBullets(exId, timerState.totalSeries);
         clearInterval(timerInterval);
-        document.getElementById('timerDigits').textContent='✓';
-        document.getElementById('timerLabel').textContent='¡COMPLETADO!';
-        document.getElementById('timerNextLabel').textContent='🎉 Todas las series terminadas';
-        document.getElementById('ringFill').style.strokeDashoffset=CIRC;
         playBeep(880, 0.3); playBeep(1100, 0.3, 0.3);
+        if(navigator.vibrate) navigator.vibrate([100,50,200]);
+
+        // find next exercise in same day
+        const nextEx = findNextExercise(exId);
+        if(nextEx) {
+          document.getElementById('timerDigits').textContent='✓';
+          document.getElementById('timerLabel').textContent='¡COMPLETADO!';
+          document.getElementById('timerNextLabel').textContent=`⏭ Siguiente: ${nextEx.name}`;
+          document.getElementById('tcSkip').textContent=`▶ Ir a ${nextEx.name}`;
+          document.getElementById('tcSkip').onclick = () => {
+            timerClose();
+            setTimeout(() => launchTimerById(nextEx.id), 300);
+          };
+        } else {
+          document.getElementById('timerDigits').textContent='✓';
+          document.getElementById('timerLabel').textContent='¡COMPLETADO!';
+          document.getElementById('timerNextLabel').textContent='🎉 ¡Todos los ejercicios terminados!';
+          document.getElementById('ringFill').style.strokeDashoffset=CIRC;
+        }
         return;
       }
       // advance to next work phase
@@ -1661,6 +1762,7 @@ function showTab(id,el){
   el.classList.add('active');
   if(id==='pesos') renderPesos();
   if(id==='cal') renderCalendar();
+  if(id==='progreso') renderProgressTab();
 }
 
 // ═══════════════════════════════════════════
@@ -1826,13 +1928,15 @@ function autoSaveWeight(exId) {
   if (!allData[wKey]) allData[wKey] = {};
   allData[wKey][exId] = inp.value;
   try { localStorage.setItem('rutina_pesos', JSON.stringify(allData)); } catch(e){}
-  // show saved indicator briefly
   const saved = document.getElementById('quickw-saved-' + exId);
-  if (saved) { saved.style.display = 'inline'; clearTimeout(saved._t); saved._t = setTimeout(() => saved.style.display = 'none', 1500); }
-  // sync to Google Sheets after 2s pause (debounced)
-  clearTimeout(inp._sheetsTimer);
-  inp._sheetsTimer = setTimeout(() => syncToSheets(WEEKS[currentWeek], exId, inp.value), 2000);
-  // also sync tab log if open
+  if (saved) { saved.style.display='inline'; clearTimeout(saved._t); saved._t=setTimeout(()=>saved.style.display='none',1500); }
+  // sync to Supabase (debounced 2s)
+  clearTimeout(inp._supaTimer);
+  inp._supaTimer = setTimeout(() => {
+    const series = getSeriesCount(exId, DAYS[Object.keys(DAYS).find(d=>DAYS[d].find(x=>x.id===exId))]?.find(x=>x.id===exId)?.series||3);
+    const reps = getReps(exId, DAYS[Object.keys(DAYS).find(d=>DAYS[d].find(x=>x.id===exId))]?.find(x=>x.id===exId)?.reps||'—');
+    saveWeightToSupabase(WEEKS[currentWeek], exId, inp.value, series, reps);
+  }, 2000);
   const tabInp = document.getElementById('inp_' + exId);
   if (tabInp) tabInp.value = inp.value;
 }
@@ -2296,8 +2400,13 @@ function calCellClick(e, day) {
 function calPick(type) {
   if (!pickerDate) return;
   const key = calKey(pickerDate.y, pickerDate.m, pickerDate.d);
-  if (type === 'clear') delete calData[key];
-  else calData[key] = type;
+  if (type === 'clear') {
+    delete calData[key];
+    deleteSessionFromSupabase(key);
+  } else {
+    calData[key] = type;
+    saveSessionToSupabase(key, type);
+  }
   try { localStorage.setItem('rutina_cal', JSON.stringify(calData)); } catch(e){}
   document.getElementById('calTypePicker').classList.remove('show');
   renderCalendar();
@@ -2396,32 +2505,307 @@ function finishSession(dayKey, calType) {
 function markSessionInCalendar(key, calType, dayKey, isAuto) {
   calData[key] = calType;
   try { localStorage.setItem('rutina_cal', JSON.stringify(calData)); } catch(e){}
-  // Update finish button
+  saveSessionToSupabase(key, calType);
   const btn = document.querySelector(`#finish-${dayKey} .finish-btn`);
-  if (btn) {
-    btn.textContent = '✅ Sesión guardada en el calendario';
-    btn.classList.add('done');
-  }
-  // Show toast
-  const typeLabels = { futbol:'⚽ Fútbol', superior:'💪 Tren superior', inferior:'🦵 Tren inferior', fullbody:'🔥 Full body' };
+  if (btn) { btn.textContent='✅ Sesión guardada en el calendario'; btn.classList.add('done'); }
+  const typeLabels = {futbol:'⚽ Fútbol',superior:'💪 Tren superior',inferior:'🦵 Tren inferior',fullbody:'🔥 Full body'};
   const toast = document.getElementById('sessionToast');
   if (toast) {
-    toast.textContent = (isAuto ? '🎉 ¡Sesión completada! ' : '🏁 ') + (typeLabels[calType] || calType) + ' guardado en el calendario';
+    toast.textContent=(isAuto?'🎉 ¡Sesión completada! ':'🏁 ')+(typeLabels[calType]||calType)+' guardado en el calendario';
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3500);
+    setTimeout(()=>toast.classList.remove('show'),3500);
   }
 }
 
-// INIT
-renderWarmups('lun','wu-lun');
-renderWarmups('mar','wu-mar');
-renderWarmups('jue','wu-jue');
-renderWarmups('sab','wu-sab');
-renderExercises('mar','exlist-mar');
-renderExercises('jue','exlist-jue');
-renderExercises('sab','exlist-sab');
-refreshQuickWeights();
-renderCalendar();
+function findNextExercise(currentExId) {
+  for (const exs of Object.values(DAYS)) {
+    const idx = exs.findIndex(x => x.id === currentExId);
+    if (idx !== -1 && idx < exs.length - 1) return exs[idx + 1];
+  }
+  return null;
+}
+
+function launchTimerById(exId) {
+  let ex = null;
+  for (const exs of Object.values(DAYS)) {
+    ex = exs.find(x => x.id === exId);
+    if (ex) break;
+  }
+  if (!ex) return;
+  // expand the exercise card so user can see it
+  const detail = document.getElementById('detail-' + exId);
+  const toggle = document.getElementById('toggle-' + exId);
+  if (detail && !detail.classList.contains('open')) {
+    detail.classList.add('open');
+    if (toggle) toggle.classList.add('open');
+  }
+  // scroll to it
+  const card = document.getElementById('exheader-' + exId);
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // launch timer after scroll
+  setTimeout(() => {
+    const chosenSeries = getSeriesCount(exId, ex.series);
+    timerState = { ex, phase:'work', currentSerie:1, totalSeries:chosenSeries, restSec:ex.restSec, workSec:0, restRemaining:ex.restSec, running:true };
+    updateTimerUI();
+    document.getElementById('timerOverlay').classList.add('show');
+    clearInterval(timerInterval);
+    timerInterval = setInterval(tickTimer, 1000);
+  }, 600);
+}
+
+// ═══════════════════════════════════════════
+// SUPABASE SETUP
+// ═══════════════════════════════════════════
+const SUPA_URL = 'https://hlmmwiwjtfqvfodkauxd.supabase.co';
+const SUPA_KEY = 'sb_publishable_fcGziq2RG3uQPBU9bGPZRQ_O5YQIR9X';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let currentUser = null;
+
+// ── AUTH UI ──────────────────────────────
+let authMode = 'login';
+function switchAuthTab(mode) {
+  authMode = mode;
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&mode==='login')||(i===1&&mode==='register')));
+  document.getElementById('nameField').style.display = mode==='register' ? 'block' : 'none';
+  document.getElementById('authSubmitBtn').textContent = mode==='login' ? 'Ingresar' : 'Crear cuenta';
+  document.getElementById('authError').classList.remove('show');
+}
+
+async function submitAuth() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass  = document.getElementById('authPass').value;
+  const name  = document.getElementById('authName').value.trim();
+  const errEl = document.getElementById('authError');
+  const loadEl= document.getElementById('authLoading');
+  errEl.classList.remove('show');
+  loadEl.style.display = 'block';
+  try {
+    let result;
+    if (authMode === 'login') {
+      result = await supa.auth.signInWithPassword({ email, password: pass });
+    } else {
+      result = await supa.auth.signUp({ email, password: pass, options: { data: { full_name: name || email.split('@')[0] } } });
+    }
+    if (result.error) throw result.error;
+    if (authMode === 'register' && !result.data.session) {
+      errEl.textContent = '✅ Revisa tu email para confirmar tu cuenta.';
+      errEl.style.color = 'var(--green)'; errEl.classList.add('show');
+    }
+  } catch(e) {
+    errEl.textContent = e.message || 'Error al ingresar. Verifica tus datos.';
+    errEl.style.color = 'var(--accent3)'; errEl.classList.add('show');
+  }
+  loadEl.style.display = 'none';
+}
+
+async function loginGoogle() {
+  await supa.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href }
+  });
+}
+
+async function logout() {
+  await supa.auth.signOut();
+  currentUser = null;
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('authScreen').classList.remove('hidden');
+}
+
+// ── AUTH STATE LISTENER ──────────────────
+supa.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) {
+    currentUser = session.user;
+    await initApp();
+  } else {
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('authScreen').classList.remove('hidden');
+  }
+});
+
+async function initApp() {
+  // show app
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('mainApp').style.display = 'block';
+  // set user info
+  const name = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || '?';
+  document.getElementById('userName').textContent = name;
+  document.getElementById('userAvatar').textContent = name[0].toUpperCase();
+  // load data from Supabase
+  await loadCalendarFromSupabase();
+  await loadWeightsFromSupabase();
+  // init UI
+  renderWarmups('lun','wu-lun');
+  renderWarmups('mar','wu-mar');
+  renderWarmups('jue','wu-jue');
+  renderWarmups('sab','wu-sab');
+  renderExercises('mar','exlist-mar');
+  renderExercises('jue','exlist-jue');
+  renderExercises('sab','exlist-sab');
+  refreshQuickWeights();
+  renderCalendar();
+}
+
+// ── SYNC INDICATOR ───────────────────────
+function setSyncing(state) {
+  const dot = document.getElementById('syncDot');
+  if (!dot) return;
+  dot.className = 'sync-dot' + (state==='syncing'?' syncing':state==='error'?' error':'');
+  dot.title = state==='syncing'?'Sincronizando...':state==='error'?'Error de sincronización':'Sincronizado';
+}
+
+// ── CALENDAR SYNC ────────────────────────
+async function loadCalendarFromSupabase() {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await supa.from('sessions').select('date,type').eq('user_id', currentUser.id);
+    if (error) throw error;
+    calData = {};
+    data.forEach(row => { calData[row.date] = row.type; });
+    try { localStorage.setItem('rutina_cal', JSON.stringify(calData)); } catch(e){}
+  } catch(e) { console.error('Error loading calendar:', e); }
+}
+
+async function saveSessionToSupabase(dateKey, type) {
+  if (!currentUser) return;
+  setSyncing('syncing');
+  try {
+    const { error } = await supa.from('sessions').upsert({
+      user_id: currentUser.id,
+      date: dateKey,
+      type: type
+    }, { onConflict: 'user_id,date' });
+    if (error) throw error;
+    setSyncing('ok');
+  } catch(e) { console.error('Supabase session error:', e); setSyncing('error'); }
+}
+
+async function deleteSessionFromSupabase(dateKey) {
+  if (!currentUser) return;
+  setSyncing('syncing');
+  try {
+    await supa.from('sessions').delete().eq('user_id', currentUser.id).eq('date', dateKey);
+    setSyncing('ok');
+  } catch(e) { setSyncing('error'); }
+}
+
+// ── WEIGHTS SYNC ─────────────────────────
+async function loadWeightsFromSupabase() {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await supa.from('weights').select('*').eq('user_id', currentUser.id).order('recorded_at', { ascending: false });
+    if (error) throw error;
+    // rebuild allData from Supabase — use latest per week+exercise
+    allData = {};
+    data.forEach(row => {
+      const wKey = 'week_' + row.week_label.replace('Sem ','');
+      if (!allData[wKey]) allData[wKey] = {};
+      if (!allData[wKey][row.exercise_id]) allData[wKey][row.exercise_id] = row.weight_value;
+    });
+    try { localStorage.setItem('rutina_pesos', JSON.stringify(allData)); } catch(e){}
+  } catch(e) { console.error('Error loading weights:', e); }
+}
+
+async function saveWeightToSupabase(weekLabel, exId, peso, series, reps) {
+  if (!currentUser || !peso) return;
+  setSyncing('syncing');
+  try {
+    const { error } = await supa.from('weights').insert({
+      user_id: currentUser.id,
+      week_label: weekLabel,
+      exercise_id: exId,
+      exercise_name: exName(exId),
+      weight_value: peso,
+      series: series || null,
+      reps: reps || null,
+    });
+    if (error) throw error;
+    setSyncing('ok');
+  } catch(e) { console.error('Supabase weight error:', e); setSyncing('error'); }
+}
+
+// ── PROGRESS TAB WITH CHARTS ─────────────
+function renderProgressTab() {
+  const panel = document.getElementById('panel-progreso');
+  if (!panel) return;
+  // build per-exercise weight history from allData
+  const allExercises = {};
+  Object.entries(allData).forEach(([wKey, exMap]) => {
+    const weekNum = parseInt(wKey.replace('week_',''));
+    Object.entries(exMap).forEach(([exId, peso]) => {
+      if (!peso) return;
+      if (!allExercises[exId]) allExercises[exId] = [];
+      allExercises[exId].push({ week: weekNum, label: WEEKS[weekNum] || wKey, peso });
+    });
+  });
+  // sort each by week
+  Object.values(allExercises).forEach(arr => arr.sort((a,b) => a.week - b.week));
+  // calculate streaks
+  const sortedDates = Object.keys(calData).filter(k => calData[k] && calData[k]!=='descanso').sort();
+  let streak = 0;
+  const today = new Date();
+  let check = new Date(today);
+  while (true) {
+    const k = check.toISOString().slice(0,10);
+    if (calData[k] && calData[k]!=='descanso') { streak++; check.setDate(check.getDate()-1); }
+    else break;
+  }
+  const totalSessions = Object.values(calData).filter(v => v && v!=='descanso').length;
+  // render
+  let html = `
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+      <div class="stat-box"><div class="sv">${totalSessions}</div><div class="sl">Sesiones totales</div></div>
+      <div class="stat-box"><div class="sv" style="color:var(--accent3)">${streak}</div><div class="sl">🔥 Racha actual</div></div>
+      <div class="stat-box"><div class="sv" style="color:var(--green)">${sortedDates.length > 0 ? Math.round((sortedDates.length / Math.max(1, Math.ceil((today - new Date(sortedDates[0])) / (7*86400000)))) * 7) : 0}</div><div class="sl">Días/semana</div></div>
+    </div>
+    <div class="section-label">Evolución de pesos</div>`;
+  if (Object.keys(allExercises).length === 0) {
+    html += `<div style="text-align:center;padding:30px;color:var(--muted);font-size:.85rem;">Aún no hay datos de pesos registrados.<br>Entrena y registra tus pesos para ver tu progreso aquí.</div>`;
+  } else {
+    Object.entries(allExercises).forEach(([exId, history]) => {
+      if (history.length < 1) return;
+      const name = exName(exId);
+      const max = Math.max(...history.map(h => parseFloat(h.peso)||0));
+      const latest = parseFloat(history[history.length-1].peso)||0;
+      const first = parseFloat(history[0].peso)||0;
+      const improvement = first > 0 ? Math.round(((latest-first)/first)*100) : 0;
+      // mini SVG chart
+      const W=200, H=60, pad=8;
+      const vals = history.map(h => parseFloat(h.peso)||0);
+      const minV = Math.min(...vals), maxV = Math.max(...vals);
+      const range = maxV - minV || 1;
+      const pts = vals.map((v,i) => {
+        const x = pad + (i/(Math.max(vals.length-1,1)))*(W-pad*2);
+        const y = H - pad - ((v-minV)/range)*(H-pad*2);
+        return `${x},${y}`;
+      }).join(' ');
+      html += `<div class="prog-card" style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-size:.82rem;font-weight:600;color:var(--text)">${name}</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="font-size:.72rem;color:var(--muted)">Máx: <b style="color:var(--accent)">${max}kg</b></span>
+            ${improvement!==0?`<span style="font-size:.7rem;padding:2px 7px;border-radius:4px;background:${improvement>0?'rgba(76,255,145,.15)':'rgba(255,107,71,.15)'};color:${improvement>0?'var(--green)':'var(--accent3)'};">${improvement>0?'+':''}${improvement}%</span>`:''}
+          </div>
+        </div>
+        <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:60px;background:var(--surface);border-radius:8px;">
+          <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>
+          ${vals.map((v,i)=>{
+            const x=pad+(i/(Math.max(vals.length-1,1)))*(W-pad*2);
+            const y=H-pad-((v-minV)/range)*(H-pad*2);
+            return `<circle cx="${x}" cy="${y}" r="3" fill="var(--accent)"/><text x="${x}" y="${y-6}" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="sans-serif">${v}</text>`;
+          }).join('')}
+        </svg>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;">
+          ${history.map(h=>`<span style="font-size:.62rem;color:var(--muted)">${h.label}</span>`).join('')}
+        </div>
+      </div>`;
+    });
+  }
+  panel.innerHTML = '<div class="day-header"><span class="day-badge" style="background:var(--accent2)">PROGRESO</span><span style="font-size:.85rem;color:var(--muted)">Mi evolución</span></div>' + html;
+}
+
+
 </script>
 <!-- CALENDAR TYPE PICKER -->
 <div class="cal-type-picker" id="calTypePicker">
@@ -2433,6 +2817,8 @@ renderCalendar();
   <button class="cal-pick-btn" onclick="calPick('descanso')">😴 Descanso activo</button>
   <button class="cal-pick-btn clear" onclick="calPick('clear')">✕ Borrar</button>
 </div>
+
+</div><!-- end mainApp -->
 <!-- SESSION COMPLETE TOAST -->
 <div class="session-toast" id="sessionToast"></div>
 
